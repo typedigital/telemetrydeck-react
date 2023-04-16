@@ -1,0 +1,17 @@
+{
+  "extends": [
+      "@typedigital/eslint-config",
+      "@typedigital/eslint-config/typescript",
+      "@typedigital/eslint-config/react"
+  ],
+  "rules": {
+    "react/require-default-props": "off",
+    "no-undefined": "off",
+    "@typescript-eslint/quotes": ["error", "double"]
+  },
+  "parserOptions": {
+    "project": ["./tsconfig.json"]
+  },
+  "parser": "@typescript-eslint/parser",
+  "root": true
+}
