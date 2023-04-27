@@ -3,8 +3,9 @@ A library for using TelemetryDeck in your React app.
 
 ## Installation
 
-Unfortunately, the library is not yet published on npm, but it will be in the next days.
-If you still want to test this library, just install the package by adding the GitHub link of this repository to your `package.json`.
+```shell
+npm install -S @typedigital/telemetrydeck-react
+```
 
 ## Setup
 
