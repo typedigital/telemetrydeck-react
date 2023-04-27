@@ -1,0 +1,8 @@
+.editorconfig
+.github/
+.npmignore
+
+docs/
+test/
+coverage/
+example/
