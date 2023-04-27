@@ -14,6 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v3
+        id: release
         with:
           release-type: node
-          package-name: release-please-action
+          package-name: "@typedigital/telemetrydeck-react"
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        if: ${{ steps.release.outputs.release_created }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+        if: ${{ steps.release.outputs.release_created }}
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+        if: ${{ steps.release.outputs.release_created }}
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        if: ${{ steps.release.outputs.release_created }}
