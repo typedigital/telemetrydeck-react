@@ -48,14 +48,14 @@ function Component() {
   const { signal } = useTelemetryDeck();
 
   const clickHandler = async () => {
-    const res = await signal({event: 'button-click', type: 'click'})
+    const res = await signal('click', {event: 'button-click', target: 'Call to Action'})
     console.log(res); // the response of the TelemetryDeck API
   }
 
   // If you want to track if a user saw a certain page or component just use an effect
   React.useEffect(() => {
     (async () => {
-      await signal({event: 'component-view'});
+      await signal('pageview', {event: 'component-view'});
     })();
   }, [])
 

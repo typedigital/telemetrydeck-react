@@ -7,7 +7,8 @@
   "rules": {
     "react/require-default-props": "off",
     "no-undefined": "off",
-    "@typescript-eslint/quotes": ["error", "double"]
+    "@typescript-eslint/quotes": ["error", "double"],
+    "max-len": ["warn", { "code": 120 }]
   },
   "parserOptions": {
     "project": ["./tsconfig.json"]
