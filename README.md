@@ -15,7 +15,7 @@ To set up this library, simply create a TelemetryDeck instance with the factory 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { TelemetryDeckProvider, createTelemetryDeck } from '@typedigital/telemetrydeck-react';
-import { Component } from './component';
+import { Dashboard } from './Dashboard';
 
 const td = createTelemetryDeck({app: process.env.APP_ID, user: 'anonymous'});
 
@@ -24,7 +24,7 @@ const App = () => {
   return (
     <div>
       <TelemetryDeckProvider telemetryDeck={td}>
-        <Component />
+        <Dashboard />
       </TelemetryDeckProvider>
     </div>
   );
@@ -43,25 +43,26 @@ import * as React from 'react';
 import { useTelemetryDeck } from '@typedigital/telemetrydeck-react';
 
 
-function Component() {
+function Dashboard() {
 
   const { signal } = useTelemetryDeck();
 
   const clickHandler = async () => {
-    const res = await signal('click', {event: 'button-click', target: 'Call to Action'})
+    const res = await signal('click', { event: 'button-click', target: 'Call to Action' })
     console.log(res); // the response of the TelemetryDeck API
   }
 
   // If you want to track if a user saw a certain page or component just use an effect
   React.useEffect(() => {
     (async () => {
-      await signal('pageview', {event: 'component-view'});
+      const { pathname } = window.location;
+      await signal('pageview', { component: 'dashboard', path: pathname });
     })();
   }, [])
 
   return (
     <React.Fragment>
-      <h1>Component</h1>
+      <h1>My Dashboard</h1>
       <button onClick={async () => await clickHandler()}>
         Click me
       </button>
@@ -70,7 +71,7 @@ function Component() {
 }
 
 export {
-  Component
+  Dashboard
 }
 ```
 
