@@ -75,8 +75,52 @@ export {
 }
 ```
 
-##  React Native Support :construction:
-We have not yet tested the integration in a React Native app.
+##  React Native & Expo Support
+
+With a workaround, `telemetrydeck-react` also supports React Native or Expo.
+This workaround is necessary because the JavaScript SDK of TelemetryDeck needs a crypto implementation to generate SHA-256 hashes. If no browser implementation is available because you are not on the web, TelemetryDeck falls back to the Node.js implementation.
+
+In the React Native context, this is why certain functions need to be monkey-patched in order for the SDK to work properly. Also, a polyfill for the Node.js Crypto module needs to be added, otherwise the static analysis of the code will fail as it will not find Node.js Crypto.
+
+If you are developing an Expo project, you should install the following dependencies in addition to this library:
+
+```shell
+npm i -S react-native-quick-crypto react-native-quick-base64 expo-crypto text-encoding
+```
+
+### Polyfill Node.js Crypto
+
+For the polyfill of the Crypto module you should follow the documentation of [x].
+
+### Monkey-Patching crypto and TextEncoder
+
+To patch the functionalities, a file named `globals.js` should be created first. The following code should be added to this file. This code extends the global object for the React Native Context with the TextEncoder and the `crypto.subtle.digest` function, which converts a message to a hash.
+
+```ts
+// globals.js
+
+import * as Crypto from 'expo-crypto';
+
+globalThis.crypto = {
+    subtle: {
+        digest: (algorithm, message) => Crypto.digest(algorithm, message)
+    }
+}
+global.TextEncoder = require('text-encoding').TextEncoder;
+```
+
+Finally, the created file should be imported into the `index.js` or any other root file for the bundler.
+
+```js
+// index.js
+
+import { registerRootComponent } from 'expo';
+import './globals.js';
+import App from './App';
+
+registerRootComponent(App);
+```
+
 
 ## Feedback & Contributions
 We appreciate any feedback.
