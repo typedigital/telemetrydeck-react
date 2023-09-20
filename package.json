@@ -1,6 +1,6 @@
 {
     "name": "@typedigital/telemetrydeck-react",
-    "version": "0.1.0",
+    "version": "0.2.0-rc",
     "author": "Andreas Kottre",
     "module": "dist/telemetrydeck-react.esm.js",
     "license": "MIT",
@@ -36,12 +36,16 @@
         {
             "path": "dist/telemetrydeck-react.cjs.production.min.js",
             "limit": "10 KB",
-            "ignore": ["@telemetrydeck/sdk"]
+            "ignore": [
+                "@telemetrydeck/sdk"
+            ]
         },
         {
             "path": "dist/telemetrydeck-react.esm.js",
             "limit": "10 KB",
-            "ignore": ["@telemetrydeck/sdk"]
+            "ignore": [
+                "@telemetrydeck/sdk"
+            ]
         }
     ],
     "devDependencies": {
