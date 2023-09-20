@@ -2,22 +2,18 @@ name: CI
 on: [push]
 jobs:
   build:
-    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
+    name: Build, lint, and test on Node
 
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node: [14, 16, 18]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Use Node ${{ matrix.node }}
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version-file: '.nvmrc'
 
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1

@@ -1,14 +1,38 @@
 declare module "@telemetrydeck/sdk" {
-    type Method = string;
-    type Payload = Record<string, string | number | boolean>;
-    type Options = { target?: string, app?: string, user?: string };
+  declare class Store {
+    private #data: any[];
 
-    export class TelemetryDeck {
-      constructor(options?: Options);
-      async ingest(queue: [Method, Payload?][]): void;
-      app(appId: string): void;
-      user(identifier: string): void;
-      async signal(payload?: Payload): Promise<Response>;
-      push(tuple: [Method, Payload?] = []): Promise<void>;
-    }
+    push(value: Promise<any>): void;
+    clear(): void;
+    values(): any[];
+  }
+
+  type Payload = Record<string, string | number | boolean>;
+  type Options = {
+    appID: string,
+    clientUser: string,
+    target?: string,
+    sessionID?: string,
+    salt?: string,
+    testMode?: boolean,
+    store?: Store,
+  };
+
+  class TelemetryDeck {
+    appID: string;
+    clientUser: string;
+    salt: string;
+    target: string;
+    testMode: boolean;
+    constructor(options?: Options);
+    signal(
+      type: string, payload?: Payload, options?: Options
+    ): Promise<Response>;
+    queue(
+      type: string, payload?: Payload, options?: Options
+    ): Promise<void>;
+    flush(): Promise<Response>;
+  }
+
+  export { TelemetryDeck as default, Payload, Options };
 }

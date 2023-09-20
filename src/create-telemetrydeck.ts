@@ -1,9 +1,17 @@
-import { TelemetryDeck } from "@telemetrydeck/sdk";
+import TelemetryDeck from "@telemetrydeck/sdk";
 
-type Options = { target?: string, app?: string, user?: string };
+type TelemetryDeckOptions = {
+  appID: string,
+  clientUser: string,
+  target?: string,
+  sessionID?: string,
+  salt?: string,
+  testMode?: boolean,
+};
 
-function createTelemetryDeck(options?: Options): TelemetryDeck {
+function createTelemetryDeck(options: TelemetryDeckOptions): TelemetryDeck {
   return new TelemetryDeck(options);
 }
 
 export { createTelemetryDeck };
+export type { TelemetryDeckOptions };

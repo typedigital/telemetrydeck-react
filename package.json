@@ -1,6 +1,6 @@
 {
     "name": "@typedigital/telemetrydeck-react",
-    "version": "0.1.0",
+    "version": "0.2.0-rc",
     "author": "Andreas Kottre",
     "module": "dist/telemetrydeck-react.esm.js",
     "license": "MIT",
@@ -35,15 +35,22 @@
     "size-limit": [
         {
             "path": "dist/telemetrydeck-react.cjs.production.min.js",
-            "limit": "10 KB"
+            "limit": "10 KB",
+            "ignore": [
+                "@telemetrydeck/sdk"
+            ]
         },
         {
             "path": "dist/telemetrydeck-react.esm.js",
-            "limit": "10 KB"
+            "limit": "10 KB",
+            "ignore": [
+                "@telemetrydeck/sdk"
+            ]
         }
     ],
     "devDependencies": {
-        "@size-limit/preset-small-lib": "^8.2.4",
+        "@size-limit/preset-small-lib": "^9.0.0",
+        "@telemetrydeck/sdk": "github:TelemetryDeck/JavaScriptSDK#pichfl/new-sdk",
         "@typedigital/eslint-config": "^7.3.2",
         "@types/react": "^18.0.35",
         "@types/react-dom": "^18.0.11",
@@ -53,12 +60,12 @@
         "husky": "^8.0.3",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "size-limit": "^8.2.4",
+        "size-limit": "^9.0.0",
         "tsdx": "^0.14.1",
         "tslib": "^2.5.0",
         "typescript": "^3.9.10"
     },
     "dependencies": {
-        "@telemetrydeck/sdk": "^1.0.5"
+        "@telemetrydeck/sdk": "github:TelemetryDeck/JavaScriptSDK#pichfl/new-sdk"
     }
 }
