@@ -90,7 +90,7 @@ npm i -S react-native-quick-crypto react-native-quick-base64 expo-crypto text-en
 
 ### Polyfill Node.js Crypto
 
-For the polyfill of the Crypto module you should follow the documentation of [x].
+For the polyfill of the Crypto module you should follow the documentation of [react-native-quick-crypto](https://github.com/margelo/react-native-quick-crypto).
 
 ### Monkey-Patching crypto and TextEncoder
 
@@ -128,3 +128,7 @@ Pull requests, ideas for new features and bug reports are very welcome.
 
 ## License
 MIT
+
+## Sponsors
+
+[<img src="	https://typedig.uber.space/assets/25919b6c-8028-451f-a019-913af2004cff" />](https://typedigital.de)
