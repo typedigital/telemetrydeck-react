@@ -1,4 +1,4 @@
-import { TelemetryDeck } from "@telemetrydeck/sdk";
+import TelemetryDeck from "@telemetrydeck/sdk";
 import React, { ReactNode } from "react";
 import { TelemetryDeckContext } from "./telemetrydeck-context";
 
@@ -7,7 +7,7 @@ type ProviderProps = {
   telemetryDeck: TelemetryDeck,
 };
 
-function TelemetryDeckProvider({ children, telemetryDeck }: ProviderProps) {
+function TelemetryDeckProvider({ children, telemetryDeck }: ProviderProps): React.ReactElement {
   const Context = TelemetryDeckContext;
   return (
     <Context.Provider value={telemetryDeck}>
