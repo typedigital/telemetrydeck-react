@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0-rc](https://github.com/typedigital/telemetrydeck-react/compare/v0.1.0...v0.2.0-rc) (2023-09-20)
+
+
+### Features
+
+* integrate JavaScript SDK v2 ([#5](https://github.com/typedigital/telemetrydeck-react/issues/5)) ([cd9aa3d](https://github.com/typedigital/telemetrydeck-react/commit/cd9aa3d96cab7decd4f3e18d15da0f3acff75795))
+
 ## 0.1.0 (2023-04-27)
 
 
