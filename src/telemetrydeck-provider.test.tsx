@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { TelemetryDeckProvider, createTelemetryDeck } from "../src";
+import { TelemetryDeckProvider, createTelemetryDeck } from ".";
 
 describe("TelemetryDeckProvider", () => {
   it("renders without crashing for React 16 to 17", () => {

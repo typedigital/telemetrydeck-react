@@ -14,7 +14,7 @@
         "node": ">=10"
     },
     "scripts": {
-        "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+        "prepublish": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
         "start": "tsdx watch",
         "build": "tsdx build",
         "test": "tsdx test --passWithNoTests --coverage",
@@ -35,22 +35,15 @@
     "size-limit": [
         {
             "path": "dist/telemetrydeck-react.cjs.production.min.js",
-            "limit": "10 KB",
-            "ignore": [
-                "@telemetrydeck/sdk"
-            ]
+            "limit": "10 KB"
         },
         {
             "path": "dist/telemetrydeck-react.esm.js",
-            "limit": "10 KB",
-            "ignore": [
-                "@telemetrydeck/sdk"
-            ]
+            "limit": "10 KB"
         }
     ],
     "devDependencies": {
         "@size-limit/preset-small-lib": "^9.0.0",
-        "@telemetrydeck/sdk": "github:TelemetryDeck/JavaScriptSDK#pichfl/new-sdk",
         "@typedigital/eslint-config": "^7.3.2",
         "@types/react": "^18.0.35",
         "@types/react-dom": "^18.0.11",
@@ -66,6 +59,6 @@
         "typescript": "^3.9.10"
     },
     "dependencies": {
-        "@telemetrydeck/sdk": "github:TelemetryDeck/JavaScriptSDK#pichfl/new-sdk"
+        "@telemetrydeck/sdk": "^2.0.3"
     }
 }
