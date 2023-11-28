@@ -77,20 +77,16 @@ export {
 
 ##  React Native & Expo Support
 
-With a workaround, `telemetrydeck-react` also supports React Native or Expo.
-This workaround is necessary because the JavaScript SDK of TelemetryDeck needs a crypto implementation to generate SHA-256 hashes. If no browser implementation is available because you are not on the web, TelemetryDeck falls back to the Node.js implementation.
+`telemetrydeck-react` also supports React Native or Expo.
+If no global implementation is available because you are not on the web, TelemetryDeck needs a subtle implementation which can be either injected by extending `globalThis or added to the TelemetryDeck instance.
 
-In the React Native context, this is why certain functions need to be monkey-patched in order for the SDK to work properly. Also, a polyfill for the Node.js Crypto module needs to be added, otherwise the static analysis of the code will fail as it will not find Node.js Crypto.
+In the React Native context, a TextEncoder is also needed for it to work properly.
 
-If you are developing an Expo project, you should install the following dependencies in addition to this library:
+If you are developing an Expo project, you should install the following dependencies in addition to this library.
 
 ```shell
-npm i -S react-native-quick-crypto react-native-quick-base64 expo-crypto text-encoding
+npm i -S expo-crypto text-encoding
 ```
-
-### Polyfill Node.js Crypto
-
-For the polyfill of the Crypto module you should follow the documentation of [react-native-quick-crypto](https://github.com/margelo/react-native-quick-crypto).
 
 ### Monkey-Patching crypto and TextEncoder
 
@@ -121,7 +117,6 @@ import App from './App';
 registerRootComponent(App);
 ```
 
-
 ## Feedback & Contributions
 We appreciate any feedback.
 Pull requests, ideas for new features and bug reports are very welcome.
@@ -131,4 +126,4 @@ MIT
 
 ## Sponsors
 
-[<img src="	https://typedig.uber.space/assets/25919b6c-8028-451f-a019-913af2004cff" />](https://typedigital.de)
+[<img src="./docs/assets/logo-typedigital-small.png" />](https://typedigital.de)
