@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.2.0-rc...v0.2.0) (2023-11-28)
+
+
+### Miscellaneous Chores
+
+* release 0.2.0 ([5bf26fd](https://github.com/typedigital/telemetrydeck-react/commit/5bf26fd3c4a3909981bd470812393ea9e5900559))
+
 ## [0.2.0-rc](https://github.com/typedigital/telemetrydeck-react/compare/v0.1.0...v0.2.0-rc) (2023-09-20)
 
 
