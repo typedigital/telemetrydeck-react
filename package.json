@@ -59,6 +59,6 @@
         "typescript": "^3.9.10"
     },
     "dependencies": {
-        "@telemetrydeck/sdk": "^2.0.3"
+        "@telemetrydeck/sdk": "^2.0.4"
     }
 }
