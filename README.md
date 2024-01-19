@@ -126,4 +126,4 @@ MIT
 
 ## Sponsors
 
-[<img src="./docs/assets/logo-typedigital-small.png" />](https://typedigital.de)
+[<img src="https://typedig.uber.space/assets/71ff4706-43e0-46f5-bab5-0fe6f07ad016" width=150 />](https://typedigital.de)
