@@ -78,7 +78,7 @@ export {
 ##  React Native & Expo Support
 
 `telemetrydeck-react` also supports React Native or Expo.
-If no global implementation is available because you are not on the web, TelemetryDeck needs a subtle implementation which can be either injected by extending `globalThis or added to the TelemetryDeck instance.
+If no global implementation is available because you are not on the web, TelemetryDeck needs a subtle implementation which can be either injected by extending `globalThis` or added to the TelemetryDeck instance.
 
 In the React Native context, a TextEncoder is also needed for it to work properly.
 
