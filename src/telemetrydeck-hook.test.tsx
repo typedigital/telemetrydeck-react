@@ -4,23 +4,23 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
-import mockSignal from "./__mocks__/mock-signal";
 import Setup from "./test-utils/setup-td";
-import mockQueue from "./__mocks__/mock-queue";
 import { createTelemetryDeck } from "./create-telemetrydeck";
+import { appID } from "./test-utils/variables";
 
 const type = "pagewiev";
 const component = "dashboard";
 const path = "/dashboard";
 
 test("signals are sent when pressing the button", () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const spy = jest.spyOn(td, "signal");
   render(
     <Setup td={td}>
       <button
         type='button'
         onClick={async () => {
-          await mockSignal(td, type, { component, path });
+          await td.signal(type, { component, path });
         }}
       >
         send signal
@@ -28,21 +28,21 @@ test("signals are sent when pressing the button", () => {
     </Setup>,
   );
   const sendSignal = screen.getByRole("button", { name: "send signal" });
-  expect(mockSignal).toHaveBeenCalledTimes(0);
+  expect(spy).toHaveBeenCalledTimes(0);
 
   fireEvent.click(sendSignal);
-  expect(mockSignal).toHaveBeenCalledTimes(1);
-  expect(mockSignal).toHaveReturnedWith(td.signal(type, { component, path }));
+  expect(spy).toHaveBeenCalledTimes(1);
 });
 
 test("signal is added to the queue when pressing the button", () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const spy = jest.spyOn(td, "queue");
   render(
     <Setup td={td}>
       <button
         type='button'
         onClick={async () => {
-          await mockQueue(td, type, { component, path });
+          await td.queue(type, { component, path });
         }}
       >
         add to queue
@@ -50,9 +50,8 @@ test("signal is added to the queue when pressing the button", () => {
     </Setup>,
   );
   const addToQueue = screen.getByRole("button", { name: "add to queue" });
-  expect(mockQueue).toHaveBeenCalledTimes(0);
+  expect(spy).toHaveBeenCalledTimes(0);
 
   fireEvent.click(addToQueue);
-  expect(mockQueue).toHaveBeenCalledTimes(1);
-  expect(mockQueue).toHaveReturnedWith(td.queue(type, { component, path }));
+  expect(spy).toHaveBeenCalledTimes(1);
 });

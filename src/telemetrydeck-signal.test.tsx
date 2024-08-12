@@ -6,12 +6,11 @@ import { fireEvent, render, screen, act } from "@testing-library/react";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import mockSignal from "./__mocks__/mock-signal";
+import { LIB_VERSION } from "./version";
 import Setup from "./test-utils/setup-td";
 import { handlers } from "./test-utils/handlers";
-import mockQueue from "./__mocks__/mock-queue";
-import mockFlush from "./__mocks__/mock-flush";
 import { createTelemetryDeck } from "./create-telemetrydeck";
+import { appID } from "./test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -23,11 +22,8 @@ const component = "dashboard";
 const path = "/dashboard";
 
 test("signals are sent when pressing the button", async () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
-  /**
-   * This event listener is used to count the number of requests sent to the server.
-   */
   let requestCount = 0;
   server.events.on("request:start", () => {
     requestCount += 1;
@@ -37,7 +33,10 @@ test("signals are sent when pressing the button", async () => {
       <button
         type='button'
         onClick={async () => {
-          await mockSignal(td, "signal button click", { component, path });
+          const res = await td.signal("signal button click", { component, path });
+          const jsonRes = await res.json();
+          expect(jsonRes.username[0].appID).toBe(appID);
+          expect(jsonRes.username[0].type).toBe("signal button click");
         }}
       >
         send signal
@@ -55,7 +54,7 @@ test("signals are sent when pressing the button", async () => {
 });
 
 test("no requests are sent when adding signals to the queue", async () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -69,7 +68,7 @@ test("no requests are sent when adding signals to the queue", async () => {
       <button
         type='button'
         onClick={async () => {
-          await mockQueue(td, "queue button click", { component, path });
+          await td.queue("queue button click", { ...{ component, path }, tdReactVersion: LIB_VERSION });
         }}
       >
         add to queue
@@ -84,7 +83,7 @@ test("no requests are sent when adding signals to the queue", async () => {
 });
 
 test("queued signals are sent together as one", async () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -109,7 +108,7 @@ test("queued signals are sent together as one", async () => {
         <button
           type='button'
           onClick={async () => {
-            await mockSignal(td, "signal button click", { component, path });
+            await td.signal("signal button click", { component, path });
           }}
         >
           send signal
@@ -117,7 +116,7 @@ test("queued signals are sent together as one", async () => {
         <button
           type='button'
           onClick={async () => {
-            await mockQueue(td, "queue button click", { component, path });
+            await td.queue("queue button click", { component, path });
           }}
         >
           add to queue
@@ -125,7 +124,9 @@ test("queued signals are sent together as one", async () => {
         <button
           type='button'
           onClick={async () => {
-            await mockFlush(td);
+            const res = await td.flush();
+            const json = await res.json();
+            expect(json.username.length).toBe(queueRequestCount);
           }}
         >
           flush queue
@@ -157,7 +158,7 @@ test("queued signals are sent together as one", async () => {
 });
 
 test("Up to 100 queued signals can be set and flushed", async () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -176,7 +177,7 @@ test("Up to 100 queued signals can be set and flushed", async () => {
         <button
           type='button'
           onClick={async () => {
-            await mockQueue(td, "queue button click", { component, path });
+            await td.queue("queue button click", { component, path });
           }}
         >
           add to queue
@@ -184,7 +185,7 @@ test("Up to 100 queued signals can be set and flushed", async () => {
         <button
           type='button'
           onClick={async () => {
-            await mockFlush(td);
+            await td.flush();
           }}
         >
           flush queue
@@ -210,7 +211,7 @@ test("Up to 100 queued signals can be set and flushed", async () => {
 });
 
 test("Flushing the Store without queued signals does not break the system", async () => {
-  const td = createTelemetryDeck({ appID: "123456789", clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -228,7 +229,7 @@ test("Flushing the Store without queued signals does not break the system", asyn
       <button
         type='button'
         onClick={async () => {
-          await mockFlush(td);
+          await td.flush();
         }}
       >
         flush queue
