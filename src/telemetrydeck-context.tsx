@@ -1,6 +1,6 @@
-import TelemetryDeck from "@telemetrydeck/sdk";
 import { createContext } from "react";
+import { TelemetryDeckReactSDK } from "./create-telemetrydeck";
 
-const TelemetryDeckContext = createContext<TelemetryDeck | undefined>(undefined);
+const TelemetryDeckContext = createContext<TelemetryDeckReactSDK | undefined>(undefined);
 
 export { TelemetryDeckContext };
