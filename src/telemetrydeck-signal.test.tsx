@@ -2,15 +2,17 @@
 /* eslint-disable import/no-unassigned-import */
 /* eslint-disable import/extensions */
 import React from "react";
-import { fireEvent, render, screen, act } from "@testing-library/react";
+import { fireEvent, render, screen, act, renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
 import { setupServer } from "msw/node";
+import { TelemetryDeckProvider } from "./telemetrydeck-provider";
 import { LIB_VERSION } from "./version";
 import Setup from "./test-utils/setup-td";
 import { handlers } from "./test-utils/handlers";
 import { createTelemetryDeck } from "./create-telemetrydeck";
 import { appID } from "./test-utils/variables";
+import { useTelemetryDeck } from "./use-telemetrydeck";
 
 const server = setupServer(...handlers);
 
@@ -240,4 +242,19 @@ test("Flushing the Store without queued signals does not break the system", asyn
 
   await act(() => fireEvent.click(flushQueue));
   expect(queueRequestCount).toBe(0);
+});
+test("Signal Requests return undefined and log an error if no appId was provided to createTelemetryDeck", async () => {
+  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => null);
+  const td = createTelemetryDeck({ clientUser: "anonymous" });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <TelemetryDeckProvider telemetryDeck={td}>
+      {children}
+    </TelemetryDeckProvider>
+  );
+  const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
+  expect(await signal("signal button click")).toBeUndefined();
+  expect(consoleErrorSpy.mock.calls.some(
+    (call) => call.includes("TelemetryDeck: signal method is not available"),
+  )).toBe(true);
+  consoleErrorSpy.mockRestore();
 });
