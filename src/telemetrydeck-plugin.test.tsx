@@ -16,9 +16,6 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-// const component = "dashboard";
-// const path = "/dashboard";
-
 test("resolves the browserPlugin information when added to TelemetryDeck context", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: ["browserPlugin"] });
 
