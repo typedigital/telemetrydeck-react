@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.2.0...v0.3.0) (2025-06-09)
+
+
+### Features
+
+* new tests ([#15](https://github.com/typedigital/telemetrydeck-react/issues/15)) ([2d4fe78](https://github.com/typedigital/telemetrydeck-react/commit/2d4fe788891a88b98be6fc69945576a170d14cd4))
+
 ## [0.2.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.2.0-rc...v0.2.0) (2024-01-17)
 
 
