@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import TelemetryDeck from "@telemetrydeck/sdk";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
 
 const Setup: React.FC<{children: ReactElement, td: TelemetryDeck}> = ({ children, td }) => {
   return (

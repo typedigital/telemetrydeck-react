@@ -1,35 +1,44 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import TelemetryDeck, { TelemetryDeckOptions } from "@telemetrydeck/sdk";
+import validatePlugin from "./plugins/validate";
 
-type TelemetryDeckReactSDKPlugins = "browserPlugin";
+type TelemetryDeckReactSDKPlugin = {
+  name: string,
+  getPluginPayload: () => Record<string, unknown>,
+};
 
 type TelemetryDeckReactSDKOptions = TelemetryDeckOptions & {
-  plugins?: TelemetryDeckReactSDKPlugins[],
+  plugins?: TelemetryDeckReactSDKPlugin[],
 };
 
 type TelemetryDeckReactSDK = TelemetryDeck & {
-  plugins?: TelemetryDeckReactSDKPlugins[],
+  plugins?: TelemetryDeckReactSDKPlugin[],
 };
 
 function createTelemetryDeck(
-  options: Omit<TelemetryDeckReactSDKOptions, "appID"> & { appID?: string },
+  options: TelemetryDeckReactSDKOptions,
 ): TelemetryDeckReactSDK {
-  if (!options.appID) {
-    // eslint-disable-next-line no-console
-    console.error("TelemetryDeck: appID is required");
-    return {} as TelemetryDeckReactSDK;
+  const { plugins, appID, ...opts } = options;
+  if (!appID) {
+    throw new Error("appId has to be defined");
   }
-  const telemetrydeck: TelemetryDeckReactSDK = new TelemetryDeck(options as TelemetryDeckOptions);
-  if (options.plugins) {
-    telemetrydeck.plugins = options.plugins;
+  const telemetrydeck = new TelemetryDeck({ appID, ...opts });
+
+  // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
+  const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;
+  if (plugins && Array.isArray(plugins)) {
+    plugins.forEach((plugin) => {
+      validatePlugin(plugin);
+    });
+    telemetryDeckReactSDK.plugins = plugins;
   }
-  return telemetrydeck;
+  return telemetryDeckReactSDK;
 }
 
 export { createTelemetryDeck };
 
 export type {
   TelemetryDeckReactSDKOptions,
-  TelemetryDeckReactSDKPlugins,
+  TelemetryDeckReactSDKPlugin,
   TelemetryDeckReactSDK,
 };

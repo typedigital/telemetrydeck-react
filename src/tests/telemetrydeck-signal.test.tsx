@@ -1,18 +1,16 @@
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable import/no-unassigned-import */
-/* eslint-disable import/extensions */
 import React from "react";
-import { fireEvent, render, screen, act, renderHook } from "@testing-library/react";
+import { fireEvent, render, screen, act } from "@testing-library/react";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { TelemetryDeckProvider } from "./telemetrydeck-provider";
-import { LIB_VERSION } from "./version";
+import { LIB_VERSION } from "../version";
+import { createTelemetryDeck } from "../create-telemetrydeck";
 import Setup from "./test-utils/setup-td";
 import { handlers } from "./test-utils/handlers";
-import { createTelemetryDeck } from "./create-telemetrydeck";
 import { appID } from "./test-utils/variables";
-import { useTelemetryDeck } from "./use-telemetrydeck";
 
 const server = setupServer(...handlers);
 
@@ -23,7 +21,7 @@ afterAll(() => server.close());
 const component = "dashboard";
 const path = "/dashboard";
 
-test("signals are sent when pressing the button", async () => {
+test("given a telemetryDeck, when envoking its signal function, the respective signal is sent", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   let requestCount = 0;
@@ -55,7 +53,7 @@ test("signals are sent when pressing the button", async () => {
   expect(requestCount).toBe(2);
 });
 
-test("no requests are sent when adding signals to the queue", async () => {
+test("Given a telemetryDeck, when adding signals to the queue, then no request should be sent", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
@@ -84,7 +82,7 @@ test("no requests are sent when adding signals to the queue", async () => {
   expect(requestCount).toBe(0);
 });
 
-test("queued signals are sent together as one", async () => {
+test("Given signals are queued, when flushing, respective signals are sent together", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
@@ -159,7 +157,7 @@ test("queued signals are sent together as one", async () => {
   expect(queueRequestCount).toBe(2);
 });
 
-test("Up to 100 queued signals can be set and flushed", async () => {
+test("Given we queue up to 100, when flushing, then the system does not break", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
@@ -212,7 +210,7 @@ test("Up to 100 queued signals can be set and flushed", async () => {
   expect(queueRequestCount).toBe(itterations);
 });
 
-test("Flushing the Store without queued signals does not break the system", async () => {
+test("Given no signals are queued, when flushing the Store, then the system does not break", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
 
   /**
@@ -243,18 +241,13 @@ test("Flushing the Store without queued signals does not break the system", asyn
   await act(() => fireEvent.click(flushQueue));
   expect(queueRequestCount).toBe(0);
 });
-test("Signal Requests return undefined and log an error if no appId was provided to createTelemetryDeck", async () => {
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => null);
-  const td = createTelemetryDeck({ clientUser: "anonymous" });
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TelemetryDeckProvider telemetryDeck={td}>
-      {children}
-    </TelemetryDeckProvider>
-  );
-  const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
-  expect(await signal("signal button click")).toBeUndefined();
-  expect(consoleErrorSpy.mock.calls.some(
-    (call) => call.includes("TelemetryDeck: signal method is not available"),
-  )).toBe(true);
-  consoleErrorSpy.mockRestore();
+test("Given no appId was provided, when envoking createTelemetryDeck, then we expect our function to throw", () => {
+  let error;
+  try {
+    // @ts-expect-error since we are testing an edge case where users using javaScript might pass undefined values
+    createTelemetryDeck({ clientUser: "anonymous" });
+  } catch (err) {
+    error = err;
+  }
+  expect(error).toBeDefined();
 });

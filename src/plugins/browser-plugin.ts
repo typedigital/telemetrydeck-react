@@ -1,7 +1,23 @@
-// Funktion zur Extraktion von Browserinformationen aus dem User-Agent-String
+// function extracting browser information from the User-Agent-String
 const getBrowserInfo = (): Record<string, string | null> => {
   const { userAgent } = window.navigator;
 
+  /**
+   * Checks the browser's render engine based on the user-agent string.
+   *
+   * NOTE: Directly parsing the user-agent string can be unreliable.
+   * For historical compatibility reasons, many user-agent strings include
+   * keywords from other browsers or render engines (e.g., "Mozilla",
+   * "like Gecko", "AppleWebKit"). This was to ensure that websites built
+   * for a specific engine would still work on other browsers.
+   *
+   * Therefore, a simple search for a keyword like "Gecko" might give a
+   * false positive, even though the browser actually uses a different engine
+   * like Blink (Chrome) or WebKit (Safari). For robust detection, using a
+   * specialized library like UAParser.js is recommended.
+   *
+   * find out more https://dev.to/saadnoorsalehin/all-you-need-to-know-about-browser-s-user-agent-string-5fe6
+  */
   const getRenderingEngine = (): string | null => {
     if (userAgent.includes("Gecko/")) {
       return "Gecko";
@@ -11,38 +27,52 @@ const getBrowserInfo = (): Record<string, string | null> => {
     return null;
   };
 
+  /**
+   * Manually parses a globally defined `userAgent` string to determine the browser's
+   * name and version.
+   *
+   * The function works by sequentially testing the `userAgent` string against a series
+   * of regular expressions. Each expression is designed to match a unique signature
+   * found in a specific browser's user agent string (e.g., "Edg/" for Edge, "OPR/" for Opera).
+   *
+   * When a match is found, the function immediately returns an object containing the
+   * browser's name and its captured version number. If no patterns match after all
+   * checks, it returns an object with null values.
+   *
+   * *IMPORTANT: The order of the `if` conditions is critical for accuracy.*
+   * Many modern browsers include keywords from other browsers in their user agent,
+   * as explained above, for compatibility reasons. For example:
+   * - The user agent for Edge and Opera contains "Chrome".
+   * - The user agent for Chrome contains "Safari".
+   *
+   * To prevent misidentification, the checks must be ordered from most specific to
+   * most general. The check for Edge must come before Chrome, otherwise Edge would be
+   * incorrectly identified as Chrome. Likewise, Chrome must be checked before Safari.
+   *
+   * @returns An object with two properties: `browserName` (string | null) and
+   * containing the browser's name and version, or null if not detected.
+  */
   const getBrowserDetails = () => {
-    if (userAgent.includes("Firefox/")) {
-      return {
-        browserName: "Firefox",
-        browserVersion: userAgent.substring(userAgent.indexOf("Firefox/") + 8),
-      };
-    } else if (userAgent.includes("Chrome/")) {
-      return {
-        browserName: "Chrome",
-        browserVersion: userAgent.substring(userAgent.indexOf("Chrome/") + 7).split(" ")[0],
-      };
-    } else if (userAgent.includes("Safari/") && !userAgent.includes("Chrome/")) {
-      const version = userAgent.includes("Version/") ?
-        userAgent.substring(userAgent.indexOf("Version/") + 8).split(" ")[0]
-        : userAgent.substring(userAgent.indexOf("Safari/") + 7).split(" ")[0];
-      return {
-        browserName: "Safari",
-        browserVersion: version,
-      };
-    } else if (userAgent.includes("Opera") || userAgent.includes("OPR/")) {
-      const version = userAgent.includes("OPR/") ?
-        userAgent.substring(userAgent.indexOf("OPR/") + 4).split(" ")[0]
-        : userAgent.substring(userAgent.indexOf("Opera/") + 6).split(" ")[0];
-      return {
-        browserName: "Opera",
-        browserVersion: version,
-      };
-    } else if (userAgent.includes("Edge/")) {
-      return {
-        browserName: "Edge",
-        browserVersion: userAgent.substring(userAgent.indexOf("Edge/") + 5).split(" ")[0],
-      };
+    let match;
+
+    if ((match = (userAgent.match(/OPR\/([\d.]+)/) || userAgent.match(/Opera\/([\d.]+)/)))) {
+      return { browserName: "Opera", browserVersion: match[1] };
+    }
+
+    if ((match = (userAgent.match(/Edg\/([\d.]+)/) || userAgent.match(/Edge\/([\d.]+)/)))) {
+      return { browserName: "Edge", browserVersion: match[1] };
+    }
+
+    if ((match = userAgent.match(/Chrome\/([\d.]+)/))) {
+      return { browserName: "Chrome", browserVersion: match[1] };
+    }
+
+    if ((match = userAgent.match(/Version\/([\d.]+).*Safari/))) {
+      return { browserName: "Safari", browserVersion: match[1] };
+    }
+
+    if ((match = userAgent.match(/Firefox\/([\d.]+)/))) {
+      return { browserName: "Firefox", browserVersion: match[1] };
     }
     return { browserName: null, browserVersion: null };
   };
@@ -75,9 +105,6 @@ const getBrowserInfo = (): Record<string, string | null> => {
   };
 };
 
-const browserPlugin = (): Record<string, unknown> => {
-  const deviceInfo = getBrowserInfo();
-  return deviceInfo;
-};
+const browserPlugin = { name: "Browser Plugin", getPluginPayload: getBrowserInfo };
 
 export default browserPlugin;
