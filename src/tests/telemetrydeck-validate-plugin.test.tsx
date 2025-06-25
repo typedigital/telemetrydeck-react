@@ -1,90 +1,48 @@
 /* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-empty-function */
+// telemetrydeck-validate-plugin.test.tsx
 
-import validatePlugin from "../plugins/validate";
+import { validatePlugin } from "../plugins/validate"; // Adjusted import path
 
 describe("validatePlugin", () => {
-  describe("Given a correctly configured plugin object", () => {
-    it("when validatePlugin is called, then it should not throw any error", () => {
-      const validPlugin = {
-        name: "My Valid Plugin",
-        getPluginPayload: () => ({ success: true }),
-      };
-
-      expect(() => validatePlugin(validPlugin)).not.toThrow();
+  describe("Given a correctly configured functional plugin", () => {
+    it("when the plugin is a function with one argument, then it should not throw any error", () => {
+      const validPlugin = (next: unknown) => next;
+      expect(() => validatePlugin(validPlugin, 0)).not.toThrow();
     });
   });
 
-  describe("Given an invalid input for the plugin", () => {
-    it("when the input is null, then it should throw an error indicating a plugin object is required", () => {
+  describe("Given an invalid input type for the plugin", () => {
+    it("when the input is an object, then it should throw an error that a function is required", () => {
+      const input = { name: "I am an old plugin" };
+      const index = 0;
+      expect(() => validatePlugin(input, index)).toThrow();
+    });
+
+    it("when the input is null, then it should throw an error that a function is required", () => {
       const input = null;
-      expect(() => validatePlugin(input)).toThrow("Invalid input: A plugin must be provided as an object.");
+      const index = 1;
+      expect(() => validatePlugin(input, index)).toThrow();
     });
 
-    it("when the input is an array, then it should throw an error indicating a plugin object is required", () => {
-      const input: [] = [];
-      expect(() => validatePlugin(input)).toThrow("Invalid input: A plugin must be provided as an object.");
-    });
-
-    it("when the input is a primitive type like a number, then it should throw an error indicating a plugin object is required", () => {
+    it("when the input is a primitive type like a number, then it should throw an error that a function is required", () => {
       const input = 123;
-      expect(() => validatePlugin(input)).toThrow("Invalid input: A plugin must be provided as an object.");
+      const index = 2;
+      expect(() => validatePlugin(input, index)).toThrow();
     });
   });
 
-  describe("Given a plugin with an invalid 'name' property", () => {
-    it("when the 'name' property is missing, then it should throw an error requiring a non-empty string", () => {
-      const pluginWithoutName = { getPluginPayload: () => ({}) };
-      expect(() => validatePlugin(pluginWithoutName)).toThrow("Invalid plugin: The \"name\" property must be a non-empty string.");
+  describe("Given a plugin that is a function but has an incorrect signature", () => {
+    it("when the function accepts zero arguments, then it should throw an error", () => {
+      const pluginWithNoArgs = () => {};
+      const index = 0;
+      expect(() => validatePlugin(pluginWithNoArgs, index)).toThrow();
     });
 
-    it("when the 'name' property is not a string, then it should throw an error requiring a non-empty string", () => {
-      const pluginWithInvalidName = { name: 42, getPluginPayload: () => ({}) };
-      expect(() => validatePlugin(pluginWithInvalidName)).toThrow("Invalid plugin: The \"name\" property must be a non-empty string.");
-    });
-
-    it("when the 'name' property is an empty or whitespace string, then it should throw an error requiring a non-empty string", () => {
-      const pluginWithEmptyName = { name: "  ", getPluginPayload: () => ({}) };
-      expect(() => validatePlugin(pluginWithEmptyName)).toThrow("Invalid plugin: The \"name\" property must be a non-empty string.");
-    });
-  });
-
-  describe("Given a plugin with an invalid 'getPluginPayload' property", () => {
-    it("when 'getPluginPayload' is missing, then it should throw an error indicating it must be a function", () => {
-      const pluginWithoutPayloadFunc = { name: "Test Plugin" };
-      expect(() => validatePlugin(pluginWithoutPayloadFunc)).toThrow("Invalid plugin \"Test Plugin\": The \"getPluginPayload\" property must be a function.");
-    });
-
-    it("when 'getPluginPayload' is not a function, then it should throw an error indicating it must be a function", () => {
-      const pluginWithInvalidPayloadFunc = { name: "Test Plugin", getPluginPayload: "not a function" };
-      expect(() => validatePlugin(pluginWithInvalidPayloadFunc)).toThrow("Invalid plugin \"Test Plugin\": The \"getPluginPayload\" property must be a function.");
-    });
-  });
-
-  describe("Given a plugin whose 'getPluginPayload' function has runtime issues", () => {
-    it("when the function throws an error on execution, then it should throw a specific error about the execution failure", () => {
-      const throwingPlugin = {
-        name: "Crashing Plugin",
-        getPluginPayload: () => {
-          throw new Error("Execution failed");
-        },
-      };
-      expect(() => validatePlugin(throwingPlugin)).toThrow("Invalid plugin \"Crashing Plugin\": The \"getPluginPayload\" function threw an error during execution: Execution failed");
-    });
-
-    it("when the function returns null, then it should throw an error indicating an object was expected", () => {
-      const pluginReturnsNull = {
-        name: "Null Returner",
-        getPluginPayload: () => null,
-      };
-      expect(() => validatePlugin(pluginReturnsNull)).toThrow("Invalid plugin \"Null Returner\": The \"getPluginPayload\" function did not return an object.");
-    });
-
-    it("when the function returns a primitive type, then it should throw an error indicating an object was expected", () => {
-      const pluginReturnsString = {
-        name: "String Returner",
-        getPluginPayload: () => "I am not an object",
-      };
-      expect(() => validatePlugin(pluginReturnsString)).toThrow("Invalid plugin \"String Returner\": The \"getPluginPayload\" function did not return an object.");
+    it("when the function accepts more than one argument, then it should throw an error", () => {
+      const pluginWithTwoArgs = (_a: unknown, _b: unknown) => {};
+      const index = 1;
+      expect(() => validatePlugin(pluginWithTwoArgs, index)).toThrow();
     });
   });
 });

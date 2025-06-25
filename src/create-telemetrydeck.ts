@@ -1,19 +1,30 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import TelemetryDeck, { TelemetryDeckOptions } from "@telemetrydeck/sdk";
+import { LIB_VERSION } from "./version";
 import validatePlugin from "./plugins/validate";
 
-type TelemetryDeckReactSDKPlugin = {
-  name: string,
-  getPluginPayload: () => Record<string, unknown>,
-};
+type PayloadEnhancer = (payload: Record<string, unknown>) => Record<string, unknown>;
+
+type TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => PayloadEnhancer;
 
 type TelemetryDeckReactSDKOptions = TelemetryDeckOptions & {
   plugins?: TelemetryDeckReactSDKPlugin[],
 };
 
 type TelemetryDeckReactSDK = TelemetryDeck & {
-  plugins?: TelemetryDeckReactSDKPlugin[],
+  payloadEnhancer?: PayloadEnhancer,
 };
+
+/**
+ * Creates the base enhancer function which adds the library version.
+ * This is the innermost function in the chain.
+ * @param version - The library version string.
+ * @returns A PayloadEnhancer function.
+ */
+const createBaseEnhancer = (version: string): PayloadEnhancer => (payload) => ({
+  ...payload,
+  tdReactVersion: version,
+});
 
 function createTelemetryDeck(
   options: TelemetryDeckReactSDKOptions,
@@ -22,23 +33,26 @@ function createTelemetryDeck(
   if (!appID) {
     throw new Error("appId has to be defined");
   }
+  (plugins ?? []).forEach(validatePlugin);
+
   const telemetrydeck = new TelemetryDeck({ appID, ...opts });
 
   // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
   const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;
-  if (plugins && Array.isArray(plugins)) {
-    plugins.forEach((plugin) => {
-      validatePlugin(plugin);
-    });
-    telemetryDeckReactSDK.plugins = plugins;
-  }
+
+  const baseEnhancer = createBaseEnhancer(LIB_VERSION);
+  telemetryDeckReactSDK.payloadEnhancer = (plugins ?? []).reduce(
+    (currentEnhancer, pluginDecorator) => pluginDecorator(currentEnhancer), baseEnhancer,
+  );
+
   return telemetryDeckReactSDK;
 }
 
 export { createTelemetryDeck };
 
 export type {
-  TelemetryDeckReactSDKOptions,
+  PayloadEnhancer,
   TelemetryDeckReactSDKPlugin,
+  TelemetryDeckReactSDKOptions,
   TelemetryDeckReactSDK,
 };

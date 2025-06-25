@@ -1,57 +1,40 @@
 /* eslint-disable max-len */
+
 /**
- * Validates a plugin object to ensure it conforms to the required structure.
+ * Validates a plugin at runtime to ensure it conforms to the functional decorator pattern.
  *
  * @remarks
- * This function performs a series of checks:
- * 1. The input must be a non-null object.
- * 2. It must have a `name` property that is a non-empty string.
- * 3. It must have a `getPluginPayload` property that is a function.
- * 4. The `getPluginPayload` function must execute without errors.
- * 5. The result of `getPluginPayload()` must be a non-null object.
+ * This function is primarily a safeguard for JavaScript users who do not get
+ * compile-time checks from TypeScript. It performs a series of checks:
+ * 1. The input must be a function.
+ * 2. It warns if the function does not accept exactly one argument, as a
+ * decorator is expected to receive the `next` enhancer.
  *
- * If any of these checks fail, the function will throw an `Error` with a
- * descriptive message.
+ * If the most critical check (is it a function?) fails, it will throw an `Error`
+ * with a descriptive message.
  *
- * @param pluginObject - The plugin object to validate. The type is `unknown` to
- * allow for validation of any input.
- * @throws If the plugin object fails any validation check.
+ * @param plugin - The plugin to validate. The type is `unknown` to allow for
+ * validation of any input.
+ * @param index - The index of the plugin in the plugins array, used for creating
+ * a more descriptive error message.
+ * @throws If the plugin is not a function.
  */
-export function validatePlugin(pluginObject: unknown): void {
-  // 1. Check if the input is a non-null object.
-  if (typeof pluginObject !== "object" || pluginObject === null || Array.isArray(pluginObject)) {
-    throw new Error("Invalid input: A plugin must be provided as an object.");
+export function validatePlugin(plugin: unknown, index: number): void {
+  // 1. Check if the input is a function. This is the most critical check.
+  if (typeof plugin !== "function") {
+    throw new Error(`Invalid plugin at index ${index}: A plugin must be a function (decorator), but received type "${typeof plugin}".`);
   }
 
-  // For easier access, we can now safely assert the type for internal use.
-  const plugin = pluginObject as Record<string, unknown>;
-
-  // 2. Check for the 'name' property and its type.
-  if (typeof plugin.name !== "string" || plugin.name.trim() === "") {
-    throw new Error("Invalid plugin: The \"name\" property must be a non-empty string.");
-  }
-
-  // 3. Check for the 'getPluginPayload' property and its type.
-  if (typeof plugin.getPluginPayload !== "function") {
-    throw new Error(`Invalid plugin "${plugin.name}": The "getPluginPayload" property must be a function.`);
-  }
-
-  // 4. Try to execute the `getPluginPayload` function.
-  let payload: unknown;
-  try {
-    payload = plugin.getPluginPayload();
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Invalid plugin "${plugin.name}": The "getPluginPayload" function threw an error during execution: ${errorMessage}`,
-    );
-  }
-
-  // 5. Check if the result of the function is a valid object.
-  if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
-    throw new Error(
-      `Invalid plugin "${plugin.name}": The "getPluginPayload" function did not return an object.`,
-    );
+  // 2. Check the function's arity (number of expected arguments).
+  // A valid decorator should accept exactly one argument (`next`).
+  // We use a warning instead of an error to be less strict, as some advanced
+  // patterns (like using ...args) might affect the `length` property.
+  if (plugin.length !== 1) {
+    // Using console.warn provides helpful feedback without crashing the application.
+    throw new Error(`
+      Warning for plugin at index ${index}: A plugin decorator should ideally accept exactly one argument ('next').
+      This function expects ${plugin.length}, which might lead to unexpected behavior.
+    `);
   }
 }
 

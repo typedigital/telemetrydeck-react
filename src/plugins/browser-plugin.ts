@@ -1,3 +1,11 @@
+/* eslint-disable max-len */
+import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "src/create-telemetrydeck";
+
+type BrowserDetails = {
+  browserName: "Opera" | "Edge" | "Chrome" | "Safari" | "Firefox",
+  browserVersion: string,
+};
+
 // function extracting browser information from the User-Agent-String
 const getBrowserInfo = (): Record<string, string | null> => {
   const { userAgent } = window.navigator;
@@ -52,7 +60,7 @@ const getBrowserInfo = (): Record<string, string | null> => {
    * @returns An object with two properties: `browserName` (string | null) and
    * containing the browser's name and version, or null if not detected.
   */
-  const getBrowserDetails = () => {
+  const getBrowserDetails = (): BrowserDetails | undefined => {
     let match;
 
     if ((match = (userAgent.match(/OPR\/([\d.]+)/) || userAgent.match(/Opera\/([\d.]+)/)))) {
@@ -74,7 +82,7 @@ const getBrowserInfo = (): Record<string, string | null> => {
     if ((match = userAgent.match(/Firefox\/([\d.]+)/))) {
       return { browserName: "Firefox", browserVersion: match[1] };
     }
-    return { browserName: null, browserVersion: null };
+    return undefined;
   };
 
   const getOS = (): string | null => {
@@ -82,7 +90,7 @@ const getBrowserInfo = (): Record<string, string | null> => {
     return osMatch?.[1] ? osMatch[1].split("; ")[0] : null;
   };
 
-  const getDeviceType = (): string => {
+  const getDeviceType = (): "mobile" | "tablet" | "desktop" => {
     if (userAgent.toLowerCase().includes("mobi")) {
       return "mobile";
     } else if (userAgent.toLowerCase().includes("tablet")) {
@@ -92,19 +100,29 @@ const getBrowserInfo = (): Record<string, string | null> => {
   };
 
   const renderingEngine = getRenderingEngine();
-  const { browserName, browserVersion } = getBrowserDetails();
+  const browserDetails = getBrowserDetails();
   const os = getOS();
   const deviceType = getDeviceType();
 
   return {
     renderingEngine,
-    browserName,
-    browserVersion,
+    ...(browserDetails ? {
+      browserName: browserDetails.browserName,
+      browserVersion: browserDetails.browserVersion,
+    } : {}),
     os,
     deviceType,
   };
 };
 
-const browserPlugin = { name: "Browser Plugin", getPluginPayload: getBrowserInfo };
+const browserPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+  // eslint-disable-next-line callback-return
+  const enhancedPayload = next(payload);
 
-export default browserPlugin;
+  return {
+    ...enhancedPayload,
+    ...getBrowserInfo(),
+  };
+};
+
+export { browserPlugin };

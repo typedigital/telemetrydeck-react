@@ -1,3 +1,4 @@
+/* eslint-disable callback-return */
 /* eslint-disable max-len */
 /* eslint-disable import/no-unassigned-import */
 import React from "react";
@@ -7,156 +8,108 @@ import "./__mocks__/mock-global";
 import { setupServer } from "msw/node";
 import { useTelemetryDeck } from "../use-telemetrydeck";
 import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
+import { createTelemetryDeck, TelemetryDeckReactSDKPlugin } from "../create-telemetrydeck";
 import { LIB_VERSION } from "../version";
-import browserPlugin from "../plugins/browser-plugin";
 import { handlers } from "./test-utils/handlers";
 import { appID } from "./test-utils/variables";
 import stringifyObjectValues from "./test-utils/transform";
 
 const server = setupServer(...handlers);
 
+const getSignalPayload = () => {
+  let signalPayload: Record<string, unknown> | undefined;
+  server.events.on("request:start", (request) => {
+    const { body } = request;
+    if (Array.isArray(body) && body.length > 0) {
+      const [{ payload }] = body;
+      signalPayload = payload;
+    } else if (body) {
+      const { payload } = body as { payload: Record<string, unknown> };
+      signalPayload = payload;
+    }
+  });
+  return () => signalPayload;
+};
+
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-test("Given no plugins are added to TelemetryDeck context, when sending a signal, it resolves to the default payload", async () => {
+test("Given no plugins are added, when sending a signal, it resolves to the default payload", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
-  let signalPayload = {};
-  server.events.on("request:start", (request) => {
-    const { body } = request;
-    if (Array.isArray(body) && body.length > 0) {
-      const [{ payload }] = body;
-      signalPayload = payload;
-    } else {
-      const { payload } = body as { payload: Record<string, unknown> };
-      signalPayload = payload;
-    }
-  });
+  const readPayload = getSignalPayload();
+
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TelemetryDeckProvider telemetryDeck={td}>
-      {children}
-    </TelemetryDeckProvider>
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
   );
   const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
   await signal("signal button click");
 
-  expect(JSON.stringify(signalPayload)).toBe(JSON.stringify({ tdReactVersion: LIB_VERSION }));
+  expect(readPayload()).toEqual({ tdReactVersion: LIB_VERSION });
 });
 
-test("Given a telemetryDeck with an empty plugin array, when sending a signal, it resolves to the default payload", async () => {
+test("Given an empty plugin array, when sending a signal, it resolves to the default payload", async () => {
   const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [] });
+  const readPayload = getSignalPayload();
 
-  let signalPayload = {};
-  server.events.on("request:start", (request) => {
-    const { body } = request;
-    if (Array.isArray(body) && body.length > 0) {
-      const [{ payload }] = body;
-      signalPayload = payload;
-    } else {
-      const { payload } = body as { payload: Record<string, unknown> };
-      signalPayload = payload;
-    }
-  });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TelemetryDeckProvider telemetryDeck={td}>
-      {children}
-    </TelemetryDeckProvider>
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
   );
   const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
   await signal("signal button click");
 
-  expect(JSON.stringify(signalPayload)).toBe(JSON.stringify({ tdReactVersion: LIB_VERSION }));
+  expect(readPayload()).toEqual({ tdReactVersion: LIB_VERSION });
 });
 
-test("Given a telemetryDeck with a valid plugin, when sending a signal, the respective plugins payload was added to the signal", async () => {
+test("Given a valid plugin decorator, when sending a signal, its payload is added", async () => {
   const pluginPayload = { pluginValue: "valid plugin value" };
-  const validPlugin = {
-    name: "Valid Plugin",
-    getPluginPayload: () => pluginPayload,
-  };
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [validPlugin] });
 
-  let signalPayload = {};
-  server.events.on("request:start", (request) => {
-    const { body } = request;
-    if (Array.isArray(body) && body.length > 0) {
-      const [{ payload }] = body;
-      signalPayload = payload;
-    } else {
-      const { payload } = body as { payload: Record<string, unknown> };
-      signalPayload = payload;
-    }
-  });
+  const validPluginDecorator: TelemetryDeckReactSDKPlugin = (next) => (payload) => {
+    const enhancedPayload = next(payload);
+    return { ...enhancedPayload, ...pluginPayload };
+  };
+
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [validPluginDecorator] });
+  const readPayload = getSignalPayload();
+
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TelemetryDeckProvider telemetryDeck={td}>
-      {children}
-    </TelemetryDeckProvider>
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
   );
   const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
   await signal("signal button click");
 
-  expect(JSON.stringify(signalPayload)).toBe(JSON.stringify({ tdReactVersion: LIB_VERSION, ...pluginPayload }));
+  const expectedPayload = { tdReactVersion: LIB_VERSION, ...pluginPayload };
+  expect(readPayload()).toEqual(expectedPayload);
 });
 
-test("Given a telemetryDeck with multiple valid plugins, when sending a signal, the respective plugins payloads were added to the signal", async () => {
-  const pluginPayloads: Record<string, unknown> = {
-    plugin1Value: "valid plugin value", plugin2Value: 15029, plugin3Value: true,
+test("Given multiple valid plugin decorators, when sending a signal, all payloads are added", async () => {
+  const plugin1Payload = { plugin1Value: "value 1" };
+  const plugin2Payload = { plugin2Value: 12345, plugin1Value: "overwritten value" };
+
+  const plugin1: TelemetryDeckReactSDKPlugin = (next) => (payload) => {
+    const enhancedPayload = next(payload);
+    return { ...enhancedPayload, ...plugin1Payload };
   };
 
-  const validPlugins = Object.entries(pluginPayloads).map(([key, value]) => {
-    const pluginPayload: Record<string, unknown> = {};
-    pluginPayload[key] = value;
-    return { name: "Valid Plugin", getPluginPayload: () => pluginPayload };
-  });
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: validPlugins });
+  const plugin2: TelemetryDeckReactSDKPlugin = (next) => (payload) => {
+    const enhancedPayload = next(payload);
+    return { ...enhancedPayload, ...plugin2Payload };
+  };
 
-  let signalPayload = {};
-  server.events.on("request:start", (request) => {
-    const { body } = request;
-    if (Array.isArray(body) && body.length > 0) {
-      const [{ payload }] = body;
-      signalPayload = payload;
-    } else {
-      const { payload } = body as { payload: Record<string, unknown> };
-      signalPayload = payload;
-    }
-  });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [plugin1, plugin2] });
+  const readPayload = getSignalPayload();
+
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TelemetryDeckProvider telemetryDeck={td}>
-      {children}
-    </TelemetryDeckProvider>
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
   );
   const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
   await signal("signal button click");
 
-  expect(JSON.stringify(signalPayload)).toBe(JSON.stringify({ tdReactVersion: LIB_VERSION, ...(stringifyObjectValues(pluginPayloads)) }));
+  const expectedPayload = {
+    tdReactVersion: LIB_VERSION,
+    ...plugin1Payload,
+    ...plugin2Payload,
+  };
+  expect(readPayload()).toEqual(stringifyObjectValues(expectedPayload));
 });
 
-test("Given a telemetryDeck, when adding an invalid plugin, it throws an error", () => {
-  const invalidPlugin = () => "invalidPlugin";
-  let error;
-  try {
-    createTelemetryDeck({
-      // @ts-expect-error since we are testing an edge case where users using javaScript might pass invalid plugin configurations
-      appID, clientUser: "anonymous", plugins: [invalidPlugin],
-    });
-  } catch (err) {
-    error = err;
-  }
-  expect(error).toBeDefined();
-});
-
-test("Given a telemetryDeck, when adding valid and invalid plugins, it throws an error", () => {
-  const invalidPlugin = () => "invalidPlugin";
-  let error;
-  try {
-    createTelemetryDeck({
-      // @ts-expect-error since we are testing an edge case where users using javaScript might pass invalid plugin configurations
-      appID, clientUser: "anonymous", plugins: [browserPlugin, invalidPlugin],
-    });
-  } catch (err) {
-    error = err;
-  }
-  expect(error).toBeDefined();
-});

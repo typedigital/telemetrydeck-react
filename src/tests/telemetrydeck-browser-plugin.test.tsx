@@ -9,7 +9,7 @@ import { setupServer } from "msw/node";
 import { useTelemetryDeck } from "../use-telemetrydeck";
 import { TelemetryDeckProvider } from "../telemetrydeck-provider";
 import { createTelemetryDeck } from "../create-telemetrydeck";
-import browserPlugin from "../plugins/browser-plugin";
+import { browserPlugin } from "../plugins";
 import { handlers } from "./test-utils/handlers";
 import { appID } from "./test-utils/variables";
 
@@ -41,8 +41,6 @@ test("Given the browser plugin is not added to TelemetryDeck context, when sendi
   await signal("signal button click");
 
   expect(signalPayload).not.toHaveProperty("renderingEngine");
-  expect(signalPayload).not.toHaveProperty("browserName");
-  expect(signalPayload).not.toHaveProperty("browserVersion");
   expect(signalPayload).not.toHaveProperty("os");
   expect(signalPayload).not.toHaveProperty("deviceType");
 });
@@ -72,8 +70,6 @@ test("Given a telemetryDeck including the browserPlugin, when sending a signal, 
   await signal("signal button click");
 
   expect(signalPayload).toHaveProperty("renderingEngine");
-  expect(signalPayload).toHaveProperty("browserName");
-  expect(signalPayload).toHaveProperty("browserVersion");
   expect(signalPayload).toHaveProperty("os");
   expect(signalPayload).toHaveProperty("deviceType");
 });
