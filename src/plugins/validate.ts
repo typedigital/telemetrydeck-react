@@ -20,17 +20,14 @@
  * @throws If the plugin is not a function.
  */
 export function validatePlugin(plugin: unknown, index: number): void {
-  // Check if the input is a function. This is the most critical check.
   if (typeof plugin !== "function") {
     throw new Error(`Invalid plugin at index ${index}: A plugin must be a function (decorator), but received type "${typeof plugin}".`);
   }
 
-  // Check the function's number of expected arguments.
   // A valid decorator should accept exactly one argument `next`.
   // We use a warning instead of an error to be less strict, as some advanced
   // patterns (like using ...args) might affect the `length` property.
   if (plugin.length !== 1) {
-    // Using console.warn provides helpful feedback without crashing the application.
     // eslint-disable-next-line no-console
     console.warn(`
       Warning for plugin at index ${index}: A plugin decorator should ideally accept exactly one argument ('next').
