@@ -2,19 +2,16 @@
 /* eslint-disable max-len */
 // telemetrydeck-validate-plugin.test.tsx
 
-import { validatePlugin } from "../plugins/validate"; // Adjusted import path
+import { validatePlugin } from "../plugins/validate";
 
 describe("validatePlugin", () => {
-  // Spy on console.warn to test for warnings without cluttering the output
   let consoleWarnSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    // Mock console.warn before each test
     consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    // Restore the original console.warn after each test
     consoleWarnSpy.mockRestore();
   });
 
@@ -38,7 +35,11 @@ describe("validatePlugin", () => {
       expect(() => validatePlugin(input, index)).toThrow();
     });
 
-    // ... (other tests for invalid types remain the same) ...
+    it("when the input is null, then it should throw an error that a function is required", () => {
+      const input = null;
+      const index = 1;
+      expect(() => validatePlugin(input, index)).toThrow();
+    });
 
     it("when the input is a primitive type like a number, then it should throw an error that a function is required", () => {
       const input = 123;
