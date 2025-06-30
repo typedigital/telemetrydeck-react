@@ -4,8 +4,8 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
+import { createTelemetryDeck } from "../create-telemetrydeck";
 import Setup from "./test-utils/setup-td";
-import { createTelemetryDeck } from "./create-telemetrydeck";
 import { appID } from "./test-utils/variables";
 
 const type = "pagewiev";

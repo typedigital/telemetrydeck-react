@@ -1,9 +1,11 @@
+/* eslint-disable no-console */
 import { useCallback, useContext } from "react";
 import { TelemetryDeckOptions, TelemetryDeckPayload } from "@telemetrydeck/sdk";
 import { TelemetryDeckContext } from "./telemetrydeck-context";
-import { LIB_VERSION } from "./version";
-
-type EnhancedPayload = TelemetryDeckPayload & { tdReactVersion: string };
+import {
+  TelemetryDeckReactSDK,
+  TelemetryDeckReactSDKOptions,
+} from "./create-telemetrydeck";
 
 type Return = {
   signal: (
@@ -14,23 +16,23 @@ type Return = {
   ) => void,
 };
 
-function enhancePayload(payload: TelemetryDeckPayload = {}): EnhancedPayload {
-  return { ...payload, tdReactVersion: LIB_VERSION };
-}
-
 function useTelemetryDeck(): Return {
-  const td = useContext(TelemetryDeckContext);
+  const td: TelemetryDeckReactSDK | undefined = useContext(TelemetryDeckContext);
 
   if (td === undefined) {
     throw new Error("useTelemetryDeck must be used within a TelemetryDeckProvider");
   }
 
-  const signal = useCallback(async (type: string, payload?: TelemetryDeckPayload, options?: TelemetryDeckOptions) => {
-    return td.signal(type, enhancePayload(payload), options);
+  const signal = useCallback(async (
+    type: string, payload?: TelemetryDeckPayload, options?: TelemetryDeckReactSDKOptions,
+  ) => {
+    return td.signal(type, td.payloadEnhancer?.(payload ?? {}) ?? payload, options);
   }, [td]);
 
-  const queue = useCallback(async (type: string, payload?: TelemetryDeckPayload, options?: TelemetryDeckOptions) => {
-    await td.queue(type, enhancePayload(payload), options);
+  const queue = useCallback(async (
+    type: string, payload?: TelemetryDeckPayload, options?: TelemetryDeckReactSDKOptions,
+  ) => {
+    await td.queue(type, td.payloadEnhancer?.(payload ?? {}) ?? payload, options);
   }, [td]);
 
   return {
