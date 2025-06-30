@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/typedigital/telemetrydeck-react/compare/v0.4.0...v0.4.1) (2025-06-30)
+
+
+### Bug Fixes
+
+* export plugins ([#24](https://github.com/typedigital/telemetrydeck-react/issues/24)) ([c57dd1e](https://github.com/typedigital/telemetrydeck-react/commit/c57dd1e92b3340848e97fc75728a56b0621a3306))
+
 ## [0.4.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.3.0...v0.4.0) (2025-06-30)
 
 
