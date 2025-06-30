@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.3.0...v0.4.0) (2025-06-30)
+
+
+### Features
+
+* add a plugin system to enhance the payload of the signals send ([#22](https://github.com/typedigital/telemetrydeck-react/issues/22)) ([0c5f6f6](https://github.com/typedigital/telemetrydeck-react/commit/0c5f6f6617f05e120ae3bf287afe16797c11a3a2))
+
 ## [0.3.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.2.0...v0.3.0) (2025-06-09)
 
 
