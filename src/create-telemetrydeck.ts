@@ -26,6 +26,16 @@ const createBaseEnhancer = (version: string): PayloadEnhancer => (payload) => ({
   tdReactVersion: version,
 });
 
+const isLocalhost = () => {
+  if (typeof window !== "undefined") {
+    const { hostname } = window.location;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return true;
+    }
+  }
+  return false;
+};
+
 function createTelemetryDeck(
   options: TelemetryDeckReactSDKOptions,
 ): TelemetryDeckReactSDK {
@@ -35,7 +45,7 @@ function createTelemetryDeck(
   }
   (plugins ?? []).forEach(validatePlugin);
 
-  const telemetrydeck = new TelemetryDeck({ appID, ...opts });
+  const telemetrydeck = new TelemetryDeck({ appID, ...opts, testMode: isLocalhost() });
 
   // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
   const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;
