@@ -45,7 +45,7 @@ function createTelemetryDeck(
   }
   (plugins ?? []).forEach(validatePlugin);
 
-  const telemetrydeck = new TelemetryDeck({ appID, ...opts, testMode: opts.testMode && isLocalhost() });
+  const telemetrydeck = new TelemetryDeck({ appID, ...opts, testMode: opts.testMode || isLocalhost() });
 
   // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
   const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;
