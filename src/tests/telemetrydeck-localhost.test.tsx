@@ -40,7 +40,7 @@ describe("localhost Signal an die API", () => {
   });
   afterAll(() => server.close());
 
-  test("Given the telemetryDeck was initilized, when the environment is not a production, then telemetryDeck should not be in testMode", () => {
+  test("Given the telemetryDeck was initilized, when the environment is not a localhost, then telemetryDeck should not be in testMode", () => {
     mockLocation("example.host");
     const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
     expect(td.testMode).toBeFalsy();
@@ -48,6 +48,16 @@ describe("localhost Signal an die API", () => {
   test("Given the telemetryDeck was initilized, when the environment is a localhost, then telemetryDeck should be in testMode", () => {
     mockLocation("localhost");
     const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+    expect(td.testMode).toBeTruthy();
+  });
+  test("Given the telemetryDeck was initilized with testMode set true, when the environment is not a localhost, then telemetryDeck should be in testMode", () => {
+    mockLocation("example.host");
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", testMode: true });
+    expect(td.testMode).toBeTruthy();
+  });
+  test("Given the telemetryDeck was initilized with testMode set false, when the environment is a localhost, then telemetryDeck should not be in testMode", () => {
+    mockLocation("localhost");
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", testMode: false });
     expect(td.testMode).toBeTruthy();
   });
 
