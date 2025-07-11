@@ -58,7 +58,7 @@ describe("localhost Signal an die API", () => {
   test("Given the telemetryDeck was initilized with testMode set false, when the environment is a localhost, then telemetryDeck should not be in testMode", () => {
     mockLocation("localhost");
     const td = createTelemetryDeck({ appID, clientUser: "anonymous", testMode: false });
-    expect(td.testMode).toBeTruthy();
+    expect(td.testMode).toBeFalsy();
   });
 
   it("Given the telemetryDeck was initialized on production, when sending a signal, then the signal request body should include isTestMode to be true", async () => {
