@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.4.1...v0.5.0) (2025-07-18)
+
+
+### Features
+
+* create test requests for apps running on localhost ([#26](https://github.com/typedigital/telemetrydeck-react/issues/26)) ([3d9b876](https://github.com/typedigital/telemetrydeck-react/commit/3d9b876f5f18aefe7134e9fd52b6f682129f3503))
+
 ## [0.4.1](https://github.com/typedigital/telemetrydeck-react/compare/v0.4.0...v0.4.1) (2025-06-30)
 
 
