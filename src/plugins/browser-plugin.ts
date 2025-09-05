@@ -8,7 +8,7 @@ type BrowserDetails = {
 
 type BrowserPlugin = {
   (next: PayloadEnhancer): PayloadEnhancer,
-  name: "@telemetrydeck/browser",
+  name: "@typedigital/browser",
 };
 
 // function extracting browser information from the User-Agent-String
