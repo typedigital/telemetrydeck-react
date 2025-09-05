@@ -1,5 +1,5 @@
 # TelemetryDeck React
-A library for using TelemetryDeck in your React app.
+A library for easily integrating [TelemetryDeck](https://telemetrydeck.com/) into your React application.
 
 ## Installation
 
@@ -14,13 +14,16 @@ To set up this library, simply create a TelemetryDeck instance with the factory 
 ```tsx
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { TelemetryDeckProvider, createTelemetryDeck } from '@typedigital/telemetrydeck-react';
+import { TelemetryDeckProvider, createTelemetryDeck } from '@telemetrydeck/react';
 import { Dashboard } from './Dashboard';
 
-const td = createTelemetryDeck({app: process.env.APP_ID, user: 'anonymous'});
+// Create the TelemetryDeck instance
+const td = createTelemetryDeck({
+  appID: "YOUR-APP-ID", // Replace with your actual App ID
+  clientUser: "anonymous" // A unique identifier for the user
+});
 
 const App = () => {
-
   return (
     <div>
       <TelemetryDeckProvider telemetryDeck={td}>
@@ -33,46 +36,137 @@ const App = () => {
 ReactDOM.render(<App />, document.getElementById('root'));
 ```
 
+## Configuration
+
+| Parameter   | Type                          | Required    | Description                                                                                                                                         |
+|-------------|-------------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| appID       | string                        | Yes         | Your unique App ID from TelemetryDeck.                                                                                                              |
+| clientUser  | string                        | Conditional | An identifier for the current user. Optional if using the browserPlugin, which generates a stable anonymous ID automatically.                        |
+| testMode    | boolean                       | No          | Puts the instance in test mode. Defaults to true if the app is running on localhost or 127.0.0.1, and false otherwise.                               |
+| plugins     | TelemetryDeckReactSDKPlugin[] | No          | An array of plugins to extend functionality and automatically enrich signal payloads (see the "Plugins" section below).                             |
+
+
 ## Basic usage
 
-To send signals, use the `useTelemetryDeck` hook and destructure the various methods that can be used to modify the instance or send signals to TelemetryDeck.
+To send signals, use the `useTelemetryDeck` hook and destructure the various methods `signal`, `queue` and `flush` to TelemetryDeck.
 For more information, see the [TelemetryDeck documentation](https://telemetrydeck.com/docs/).
+
+### `signal`: Sending Immediately
+The `signal` function sends an event to the TelemetryDeck API right away.
 
 ```tsx
 import * as React from 'react';
-import { useTelemetryDeck } from '@typedigital/telemetrydeck-react';
-
+import { useTelemetryDeck } from '@telemetrydeck/react';
 
 function Dashboard() {
-
   const { signal } = useTelemetryDeck();
 
-  const clickHandler = async () => {
-    const res = await signal('click', { event: 'button-click', target: 'Call to Action' })
-    console.log(res); // the response of the TelemetryDeck API
+  // Example: Send a click event
+  const handleClick = async () => {
+    // The first argument is the signal type (a short, descriptive string)
+    // The second argument (optional) is a payload object with additional data
+    const response = await signal('buttonClicked', { component: 'CallToAction' });
+    console.log(response); // The response from the TelemetryDeck API
   }
 
-  // If you want to track if a user saw a certain page or component just use an effect
+  // Example: Track a page view when the component mounts
   React.useEffect(() => {
-    (async () => {
-      const { pathname } = window.location;
-      await signal('pageview', { component: 'dashboard', path: pathname });
-    })();
-  }, [])
+    const { pathname } = window.location;
+    signal('pageView', { component: 'Dashboard', path: pathname });
+  }, [signal]);
 
   return (
-    <React.Fragment>
+    <>
       <h1>My Dashboard</h1>
-      <button onClick={async () => await clickHandler()}>
-        Click me
+      <button onClick={handleClick}>
+        Click Me
       </button>
-    </React.Fragment>
-  )
+    </>
+  );
 }
+```
 
-export {
-  Dashboard
+### `queue` & `flush`: Batching Signals
+You can collect multiple signals and send them together in a single network request. This is useful for reducing network traffic.
+
+1. `queue(type, payload)`: Adds a signal to an internal queue without sending it.
+
+2. `flush()`: Sends all signals currently in the queue to the API.
+
+```tsx
+import { useTelemetryDeck } from '@telemetrydeck/react';
+
+function AnalyticsComponent() {
+  const { queue, flush } = useTelemetryDeck();
+
+  const handleComplexAction = () => {
+    // Add multiple signals to the queue
+    queue('actionStarted', { step: 1 });
+    queue('intermediateStep', { step: 2 });
+    queue('actionCompleted', { step: 3 });
+
+    // Send all queued signals at once
+    flush();
+  };
+
+  return <button onClick={handleComplexAction}>Perform Complex Action</button>;
 }
+```
+
+## Plugins
+Plugins are a powerful way to automatically enrich every signal payload with additional data. This is ideal for context you want to include with every signal, such as browser information or app versions.
+
+### Using the Browser Plugin
+We provide a browserPlugin that automatically collects useful context from the user's browser.
+
+### Features:
+
+Automatic User ID: If you omit `clientUser` from your configuration, the plugin will generate a stable, anonymous ID for the user based on browser properties.
+
+Contextual Data: Automatically adds details like browser name, version, OS, and device type to every signal.
+
+```tsx
+import { createTelemetryDeck, browserPlugin } from '@telemetrydeck/react';
+
+// Configure TelemetryDeck with the browser plugin
+const td = createTelemetryDeck({
+  appID: "YOUR-APP-ID",
+  plugins: [browserPlugin]
+  // clientUser is optional here!
+});
+
+```
+
+### Creating Custom Plugins
+
+You can easily create your own plugins. A plugin is a function that takes the next function in the chain and modifies the payload.
+
+Here's an example of a plugin that adds a Git commit hash to every signal:
+
+```tsx
+import { TelemetryDeckReactSDKPlugin } from '@telemetrydeck/react';
+
+// Get the Git hash (e.g., from an environment variable)
+const commitHash = process.env.REACT_APP_COMMIT_HASH;
+
+// Define your custom plugin
+const gitVersionPlugin: TelemetryDeckReactSDKPlugin = (next) => (payload) => {
+  // Call the next function to get the recursively enhanced payload
+  const enhancedPayload = next(payload);
+
+  // Add your custom data
+  return {
+    ...enhancedPayload,
+    gitCommit: commitHash,
+  };
+};
+
+// Use your plugin during initialization
+const td = createTelemetryDeck({
+  appID: "YOUR-APP-ID",
+  clientUser: "anonymous",
+  plugins: [gitVersionPlugin] // You can combine multiple plugins
+});
 ```
 
 ##  React Native & Expo Support
@@ -126,4 +220,8 @@ MIT
 
 ## Sponsors
 
-[<img src="https://typedig.uber.space/assets/71ff4706-43e0-46f5-bab5-0fe6f07ad016" width=150 />](https://typedigital.de)
+<div style="background-color: #ffffff; padding: 10px; width: 350px; height: 65px">
+
+[<img src="https://typedigital.de/static/13fdfb01fd88e0f50b8d7d09cce92b58/a9476/Typedigital-Logo-Paket.webp" width=350 />](https://typedigital.de)
+
+</div>
