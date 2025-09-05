@@ -156,3 +156,25 @@ test.each(testCases)("$name", async (testCase) => {
 
   server.events.removeAllListeners("request:start");
 });
+
+test("Given createTelemetryDeck is initialized without a clientUser, when a signal is sent, then the clientUser in the payload is a generated hash", async () => {
+  const td = createTelemetryDeck({ appID, plugins: [browserPlugin] });
+
+  let capturedClientUser = "";
+  server.events.on("request:start", (request) => {
+    const { body } = request;
+    if (Array.isArray(body) && body.length > 0) {
+      capturedClientUser = body[0].clientUser;
+    }
+  });
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
+  );
+
+  const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
+  await signal("signal with default user");
+
+  expect(capturedClientUser).toBeDefined();
+  expect(capturedClientUser).not.toBe("");
+});

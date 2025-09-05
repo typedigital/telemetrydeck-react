@@ -1,9 +1,14 @@
 /* eslint-disable max-len */
-import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "src/create-telemetrydeck";
+import { PayloadEnhancer } from "src/create-telemetrydeck";
 
 type BrowserDetails = {
   browserName: "Opera" | "Edge" | "Chrome" | "Safari" | "Firefox",
   browserVersion: string,
+};
+
+type BrowserPlugin = {
+  (next: PayloadEnhancer): PayloadEnhancer,
+  name: "@telemetrydeck/browser",
 };
 
 // function extracting browser information from the User-Agent-String
@@ -115,14 +120,19 @@ const getBrowserInfo = (): Record<string, string | null> => {
   };
 };
 
-const browserPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+const pluginFunction = (next: PayloadEnhancer) => (payload: Record<string, unknown>): Record<string, unknown> => {
   // eslint-disable-next-line callback-return
   const enhancedPayload = next(payload);
-
   return {
     ...enhancedPayload,
     ...getBrowserInfo(),
   };
 };
 
+Object.setPrototypeOf(pluginFunction, { name: "@telemetrydeck/browser" });
+
+const browserPlugin = pluginFunction as BrowserPlugin;
+
 export { browserPlugin };
+
+export type { BrowserPlugin };
