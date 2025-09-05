@@ -129,7 +129,7 @@ const pluginFunction = (next: PayloadEnhancer) => (payload: Record<string, unkno
   };
 };
 
-Object.setPrototypeOf(pluginFunction, { name: "@telemetrydeck/browser" });
+Object.setPrototypeOf(pluginFunction, { name: "@typedigital/browser" });
 
 const browserPlugin = pluginFunction as BrowserPlugin;
 
