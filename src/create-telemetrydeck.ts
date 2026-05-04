@@ -37,16 +37,23 @@ const isLocalhost = () => {
 };
 
 function createTelemetryDeck(
-  options: TelemetryDeckReactSDKOptions,
+  options: TelemetryDeckReactSDKOptions & { namespace: string },
 ): TelemetryDeckReactSDK {
-  const { plugins, appID, ...opts } = options;
+  const { plugins, appID, namespace, target, ...opts } = options;
   if (!appID) {
-    throw new Error("appId has to be defined");
+    throw new Error("appID has to be defined.");
+  }
+  if (!namespace || namespace.trim() === "") {
+    throw new Error(
+      "namespace has to be defined and cannot be blank."
+      + " You can find your namespace in the TelemetryDeck Dashboard.",
+    );
   }
   (plugins ?? []).forEach(validatePlugin);
 
+  const resolvedTarget = target ?? `https://nom.telemetrydeck.com/v2/namespace/${namespace}/`;
   const testMode = opts.testMode === undefined ? isLocalhost() : opts.testMode;
-  const telemetrydeck = new TelemetryDeck({ appID, testMode, ...opts });
+  const telemetrydeck = new TelemetryDeck({ appID, testMode, target: resolvedTarget, ...opts });
 
   // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
   const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;

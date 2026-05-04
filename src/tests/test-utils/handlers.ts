@@ -3,7 +3,7 @@ import { ResponseComposition, rest, RestContext, RestRequest } from "msw";
 
 const handlers = [
   rest.post(
-    "https://nom.telemetrydeck.com/v2/",
+    "https://nom.telemetrydeck.com/v2/namespace/:namespace/",
     async (req: RestRequest, res: ResponseComposition, ctx: RestContext) => {
       if (!req.body) {
         return res(

@@ -9,7 +9,7 @@ import { TelemetryDeckProvider } from "../telemetrydeck-provider";
 import { useTelemetryDeck } from "../use-telemetrydeck";
 import { createTelemetryDeck } from "../create-telemetrydeck";
 import { handlers } from "./test-utils/handlers";
-import { appID } from "./test-utils/variables";
+import { appID, namespace } from "./test-utils/variables";
 import "./__mocks__/mock-global";
 import "cross-fetch/polyfill";
 
@@ -42,22 +42,22 @@ describe("localhost Signal an die API", () => {
 
   test("Given the telemetryDeck was initilized, when the environment is not a localhost, then telemetryDeck should not be in testMode", () => {
     mockLocation("example.host");
-    const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
     expect(td.testMode).toBeFalsy();
   });
   test("Given the telemetryDeck was initilized, when the environment is a localhost, then telemetryDeck should be in testMode", () => {
     mockLocation("localhost");
-    const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
     expect(td.testMode).toBeTruthy();
   });
   test("Given the telemetryDeck was initilized with testMode set true, when the environment is not a localhost, then telemetryDeck should be in testMode", () => {
     mockLocation("example.host");
-    const td = createTelemetryDeck({ appID, clientUser: "anonymous", testMode: true });
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, testMode: true });
     expect(td.testMode).toBeTruthy();
   });
   test("Given the telemetryDeck was initilized with testMode set false, when the environment is a localhost, then telemetryDeck should not be in testMode", () => {
     mockLocation("localhost");
-    const td = createTelemetryDeck({ appID, clientUser: "anonymous", testMode: false });
+    const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, testMode: false });
     expect(td.testMode).toBeFalsy();
   });
 
@@ -66,6 +66,7 @@ describe("localhost Signal an die API", () => {
     const td = createTelemetryDeck({
       appID,
       clientUser: "anonymous-tester",
+      namespace,
     });
 
     let isTestmode = false;
@@ -96,6 +97,7 @@ describe("localhost Signal an die API", () => {
     const td = createTelemetryDeck({
       appID,
       clientUser: "anonymous-tester",
+      namespace,
     });
 
     let isTestmode = false;

@@ -11,7 +11,7 @@ import { TelemetryDeckProvider } from "../telemetrydeck-provider";
 import { createTelemetryDeck, TelemetryDeckReactSDKPlugin } from "../create-telemetrydeck";
 import { LIB_VERSION } from "../version";
 import { handlers } from "./test-utils/handlers";
-import { appID } from "./test-utils/variables";
+import { appID, namespace } from "./test-utils/variables";
 import stringifyObjectValues from "./test-utils/transform";
 
 const server = setupServer(...handlers);
@@ -36,7 +36,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 test("Given no plugins are added, when sending a signal, it resolves to the default payload", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
   const readPayload = getSignalPayload();
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -49,7 +49,7 @@ test("Given no plugins are added, when sending a signal, it resolves to the defa
 });
 
 test("Given an empty plugin array, when sending a signal, it resolves to the default payload", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [] });
   const readPayload = getSignalPayload();
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -69,7 +69,7 @@ test("Given a valid plugin decorator, when sending a signal, its payload is adde
     return { ...enhancedPayload, ...pluginPayload };
   };
 
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [validPluginDecorator] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [validPluginDecorator] });
   const readPayload = getSignalPayload();
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -96,7 +96,7 @@ test("Given multiple valid plugin decorators, when sending a signal, all payload
     return { ...enhancedPayload, ...plugin2Payload };
   };
 
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [plugin1, plugin2] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [plugin1, plugin2] });
   const readPayload = getSignalPayload();
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (

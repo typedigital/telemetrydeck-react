@@ -4,11 +4,11 @@ import { TelemetryDeckProvider, createTelemetryDeck } from "..";
 
 describe("TelemetryDeckProvider", () => {
   test("Given a telemetryDeck under React 16 or 17, when rendering, the implementation does not crash", () => {
-    const td = createTelemetryDeck({ appID: "my-app-id", clientUser: "" });
+    const td = createTelemetryDeck({ appID: "my-app-id", clientUser: "", namespace: "test-namespace" });
     render(<TelemetryDeckProvider telemetryDeck={td} />);
   });
   test("Given an appId and clientUser, when creating a telemetryDeck, then the insance has the correct appID", () => {
-    const td = createTelemetryDeck({ appID: "my-app-id", clientUser: "" });
+    const td = createTelemetryDeck({ appID: "my-app-id", clientUser: "", namespace: "test-namespace" });
     expect(td).toBeInstanceOf(Object);
     expect(td.appID).toBe("my-app-id");
   });
@@ -16,7 +16,7 @@ describe("TelemetryDeckProvider", () => {
     let error;
     try {
       // @ts-expect-error since we are testing an edge case where users using javaScript might pass undefined values
-      createTelemetryDeck({ appID: undefined, clientUser: "" });
+      createTelemetryDeck({ appID: undefined, clientUser: "", namespace: "test-namespace" });
     } catch (e) {
       error = e;
     }

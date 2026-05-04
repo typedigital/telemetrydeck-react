@@ -34,7 +34,7 @@
     "typeRoots": [
       "./node_modules/@types/",
     ],
-    "baseUrl": "./",
+    "types": ["jest", "node", "react", "react-dom"],
     "resolveJsonModule": true,
   }
 
