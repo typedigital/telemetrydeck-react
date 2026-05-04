@@ -2,11 +2,19 @@
 /* eslint-disable import/extensions */
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { setupServer } from "msw/node";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
 import { createTelemetryDeck } from "../create-telemetrydeck";
 import Setup from "./test-utils/setup-td";
+import { handlers } from "./test-utils/handlers";
 import { appID, namespace } from "./test-utils/variables";
+
+const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 const type = "pagewiev";
 const component = "dashboard";
