@@ -85,6 +85,21 @@ export {
 
 `telemetrydeck-react` also supports React Native and Expo (SDK 51+).
 
+### Automatic Development Mode Detection
+
+In React Native, `testMode` is automatically enabled when the Metro bundler's `__DEV__` flag is `true` (i.e., during development). This prevents development signals from polluting your production analytics. You can explicitly override this behavior:
+
+```tsx
+const td = createTelemetryDeck({
+  appID: 'YOUR_APP_ID',
+  clientUser: 'anonymous',
+  namespace: 'your-namespace',
+  testMode: false, // Force testMode off even in development
+});
+```
+
+### Polyfilling crypto.subtle
+
 Since React Native does not provide a global `crypto.subtle` implementation, you need to polyfill it using `expo-crypto`. Since Expo SDK 51 (React Native 0.74+), `TextEncoder` is natively available in the Hermes engine and no longer requires a separate polyfill.
 
 Install the required dependency using Expo's managed install command, which ensures version compatibility with your Expo SDK:
