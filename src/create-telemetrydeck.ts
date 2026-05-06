@@ -31,7 +31,12 @@ const createBaseEnhancer = (
 });
 
 const isLocalhost = () => {
-  if (typeof window !== "undefined") {
+  // React Native / Metro bundler: __DEV__ is true in development
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    return true;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (typeof window !== "undefined" && window.location) {
     const { hostname } = window.location;
     if (hostname === "localhost" || hostname === "127.0.0.1") {
       return true;
