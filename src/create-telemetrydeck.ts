@@ -5,23 +5,35 @@ import validatePlugin from "./plugins/validate";
 
 type PayloadEnhancer = (payload: Record<string, unknown>) => Record<string, unknown>;
 
-type TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => PayloadEnhancer;
+type TelemetryDeckReactSDK = TelemetryDeck & {
+  payloadEnhancer?: PayloadEnhancer,
+  cleanup?: () => void,
+};
+
+type TelemetryDeckReactSDKObjectPlugin = {
+  enhance?: (next: PayloadEnhancer) => PayloadEnhancer,
+  setup?: (td: TelemetryDeckReactSDK) => (() => void) | undefined,
+};
+
+type TelemetryDeckReactSDKPlugin =
+  | ((next: PayloadEnhancer) => PayloadEnhancer)
+  | TelemetryDeckReactSDKObjectPlugin;
 
 type TelemetryDeckReactSDKOptions = TelemetryDeckOptions & {
   plugins?: TelemetryDeckReactSDKPlugin[],
-};
-
-type TelemetryDeckReactSDK = TelemetryDeck & {
-  payloadEnhancer?: PayloadEnhancer,
+  defaultParameters?: Record<string, unknown>,
 };
 
 /**
- * Creates the base enhancer function which adds the library version.
+ * Creates the base enhancer function which adds the library version
+ * and merges default parameters (if provided).
  * This is the innermost function in the chain.
- * @param version - The library version string.
- * @returns A PayloadEnhancer function.
  */
-const createBaseEnhancer = (version: string): PayloadEnhancer => (payload) => ({
+const createBaseEnhancer = (
+  version: string,
+  defaultParameters?: Record<string, unknown>,
+): PayloadEnhancer => (payload) => ({
+  ...defaultParameters,
   ...payload,
   tdReactVersion: version,
 });
@@ -39,7 +51,7 @@ const isLocalhost = () => {
 function createTelemetryDeck(
   options: TelemetryDeckReactSDKOptions & { namespace: string },
 ): TelemetryDeckReactSDK {
-  const { plugins, appID, namespace, target, ...opts } = options;
+  const { plugins, appID, namespace, target, defaultParameters, ...opts } = options;
   if (!appID) {
     throw new Error("appID has to be defined.");
   }
@@ -55,13 +67,42 @@ function createTelemetryDeck(
   const testMode = opts.testMode === undefined ? isLocalhost() : opts.testMode;
   const telemetrydeck = new TelemetryDeck({ appID, testMode, target: resolvedTarget, ...opts });
 
-  // This conversion to TelemetryDeckReactSDK is done in order to allow adding our plugins to the response
   const telemetryDeckReactSDK: TelemetryDeckReactSDK = telemetrydeck;
 
-  const baseEnhancer = createBaseEnhancer(LIB_VERSION);
-  telemetryDeckReactSDK.payloadEnhancer = (plugins ?? []).reduce(
+  // Separate function-plugins from object-plugins
+  const allPlugins = plugins ?? [];
+  const functionPlugins = allPlugins.filter(
+    (p): p is (next: PayloadEnhancer) => PayloadEnhancer => typeof p === "function",
+  );
+  const objectPlugins = allPlugins.filter(
+    (p): p is TelemetryDeckReactSDKObjectPlugin => typeof p !== "function",
+  );
+
+  // Collect all enhancers (from function plugins + object plugins with enhance)
+  const objectEnhancers = objectPlugins
+    .map((p) => p.enhance)
+    .filter((e): e is (next: PayloadEnhancer) => PayloadEnhancer => Boolean(e));
+  const allEnhancers: ((next: PayloadEnhancer) => PayloadEnhancer)[] = [
+    ...functionPlugins,
+    ...objectEnhancers,
+  ];
+
+  // Build enhancer chain
+  const baseEnhancer = createBaseEnhancer(LIB_VERSION, defaultParameters);
+  telemetryDeckReactSDK.payloadEnhancer = allEnhancers.reduce(
     (currentEnhancer, pluginDecorator) => pluginDecorator(currentEnhancer), baseEnhancer,
   );
+
+  // Call setup() on object plugins and collect cleanup functions
+  const cleanups = objectPlugins
+    .map((p) => p.setup)
+    .filter((s): s is NonNullable<typeof s> => Boolean(s))
+    .map((setup) => setup(telemetryDeckReactSDK))
+    .filter((c): c is () => void => typeof c === "function");
+
+  telemetryDeckReactSDK.cleanup = () => {
+    cleanups.forEach((fn) => fn());
+  };
 
   return telemetryDeckReactSDK;
 }
@@ -71,6 +112,7 @@ export { createTelemetryDeck };
 export type {
   PayloadEnhancer,
   TelemetryDeckReactSDKPlugin,
+  TelemetryDeckReactSDKObjectPlugin,
   TelemetryDeckReactSDKOptions,
   TelemetryDeckReactSDK,
 };
