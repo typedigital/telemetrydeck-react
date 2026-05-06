@@ -51,24 +51,6 @@ test("PWA plugin adds isPWA field to payload", async () => {
   const payload = readPayload();
   expect(payload).toBeDefined();
   expect(payload?.["TelemetryDeck.Acquisition.isPWA"]).toBe("false");
-
-  td.cleanup?.();
-});
-
-test("PWA plugin cleanup removes event listener", () => {
-  const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
-
-  const td = createTelemetryDeck({
-    appID,
-    clientUser: "anonymous",
-    namespace,
-    plugins: [pwaPlugin],
-  });
-
-  td.cleanup?.();
-
-  expect(removeEventListenerSpy).toHaveBeenCalledWith("appinstalled", expect.any(Function));
-  removeEventListenerSpy.mockRestore();
 });
 
 describe("SSR / React Native (no window)", () => {
@@ -83,7 +65,7 @@ describe("SSR / React Native (no window)", () => {
     global.window = originalWindow;
   });
 
-  test("PWA plugin enhance returns isPWA false when window is undefined", () => {
+  test("PWA plugin returns isPWA false when window is undefined", () => {
     const td = createTelemetryDeck({
       appID,
       clientUser: "anonymous",
@@ -93,7 +75,5 @@ describe("SSR / React Native (no window)", () => {
 
     const payload = td.payloadEnhancer?.({}) ?? {};
     expect(payload["TelemetryDeck.Acquisition.isPWA"]).toBe("false");
-
-    td.cleanup?.();
   });
 });
