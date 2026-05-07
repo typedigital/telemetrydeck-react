@@ -3,14 +3,14 @@
 import React from "react";
 import { renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
-import "./__mocks__/mock-global";
+import "../__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { useTelemetryDeck } from "../use-telemetrydeck";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
-import { pwaPlugin } from "../plugins/pwa-plugin";
-import { handlers } from "./test-utils/handlers";
-import { appID, namespace } from "./test-utils/variables";
+import { useTelemetryDeck } from "../../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
+import { createTelemetryDeck } from "../../create-telemetrydeck";
+import { webPwaPlugin } from "../../plugins/web-pwa-plugin";
+import { handlers } from "../test-utils/handlers";
+import { appID, namespace } from "../test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -38,7 +38,7 @@ test("PWA plugin adds isPWA field to payload", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [pwaPlugin],
+    plugins: [webPwaPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -51,29 +51,4 @@ test("PWA plugin adds isPWA field to payload", async () => {
   const payload = readPayload();
   expect(payload).toBeDefined();
   expect(payload?.["TelemetryDeck.Acquisition.isPWA"]).toBe("false");
-});
-
-describe("SSR / React Native (no window)", () => {
-  const originalWindow = global.window;
-
-  beforeEach(() => {
-    // @ts-expect-error simulate SSR by removing window
-    delete global.window;
-  });
-
-  afterEach(() => {
-    global.window = originalWindow;
-  });
-
-  test("PWA plugin returns isPWA false when window is undefined", () => {
-    const td = createTelemetryDeck({
-      appID,
-      clientUser: "anonymous",
-      namespace,
-      plugins: [pwaPlugin],
-    });
-
-    const payload = td.payloadEnhancer?.({}) ?? {};
-    expect(payload["TelemetryDeck.Acquisition.isPWA"]).toBe("false");
-  });
 });

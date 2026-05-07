@@ -1,14 +1,11 @@
 import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "../create-telemetrydeck";
 
 function isStandaloneMode(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
   return window.matchMedia("(display-mode: standalone)").matches
     || (navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
-const pwaPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+const webPwaPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
   // eslint-disable-next-line callback-return
   const enhancedPayload = next(payload);
 
@@ -18,4 +15,4 @@ const pwaPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (paylo
   };
 };
 
-export { pwaPlugin };
+export { webPwaPlugin };

@@ -5,9 +5,6 @@ import { LIB_VERSION } from "../version";
 const SDK_NAME = "TelemetryDeck React SDK";
 
 function getColorScheme(): string | undefined {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
   if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
     return "dark";
   }
@@ -18,9 +15,6 @@ function getColorScheme(): string | undefined {
 }
 
 function getLayoutDirection(): string | undefined {
-  if (typeof document === "undefined") {
-    return undefined;
-  }
   return document.dir
     || document.documentElement.dir
     || window.getComputedStyle(document.documentElement).direction
@@ -42,19 +36,10 @@ function getEnvironmentInfo(): Record<string, string | number> {
     "TelemetryDeck.SDK.nameAndVersion": `${SDK_NAME} ${LIB_VERSION}`,
   };
 
-  if (typeof window === "undefined") {
-    return result;
-  }
-
   const { width, height } = window.screen;
   result["TelemetryDeck.Device.screenResolutionWidth"] = width;
   result["TelemetryDeck.Device.screenResolutionHeight"] = height;
   result["TelemetryDeck.Device.screenScaleFactor"] = window.devicePixelRatio;
-
-  const timeZone = getTimeZone();
-  if (timeZone) {
-    result["TelemetryDeck.Device.timeZone"] = timeZone;
-  }
 
   const screenWithOrientation = screen as unknown as { orientation?: { type?: string } };
   if (screenWithOrientation.orientation?.type) {
@@ -66,6 +51,11 @@ function getEnvironmentInfo(): Record<string, string | number> {
     const [shortLanguage] = language.split("-");
     result["TelemetryDeck.RunContext.language"] = shortLanguage;
     result["TelemetryDeck.RunContext.locale"] = language;
+  }
+
+  const timeZone = getTimeZone();
+  if (timeZone) {
+    result["TelemetryDeck.Device.timeZone"] = timeZone;
   }
 
   const colorScheme = getColorScheme();
@@ -81,7 +71,7 @@ function getEnvironmentInfo(): Record<string, string | number> {
   return result;
 }
 
-const environmentPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+const webEnvironmentPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
   // eslint-disable-next-line callback-return
   const enhancedPayload = next(payload);
 
@@ -91,4 +81,4 @@ const environmentPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) =
   };
 };
 
-export { environmentPlugin };
+export { webEnvironmentPlugin };

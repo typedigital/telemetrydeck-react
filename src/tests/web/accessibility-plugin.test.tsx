@@ -3,14 +3,14 @@
 import React from "react";
 import { renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
-import "./__mocks__/mock-global";
+import "../__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { useTelemetryDeck } from "../use-telemetrydeck";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
-import { accessibilityPlugin } from "../plugins/accessibility-plugin";
-import { handlers } from "./test-utils/handlers";
-import { appID, namespace } from "./test-utils/variables";
+import { useTelemetryDeck } from "../../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
+import { createTelemetryDeck } from "../../create-telemetrydeck";
+import { webAccessibilityPlugin } from "../../plugins/web-accessibility-plugin";
+import { handlers } from "../test-utils/handlers";
+import { appID, namespace } from "../test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -38,7 +38,7 @@ test("Accessibility plugin adds reduce motion info", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [accessibilityPlugin],
+    plugins: [webAccessibilityPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -60,7 +60,7 @@ test("Accessibility plugin adds preferred content size category", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [accessibilityPlugin],
+    plugins: [webAccessibilityPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -75,30 +75,4 @@ test("Accessibility plugin adds preferred content size category", async () => {
   expect(["small", "medium", "large", "extraLarge"]).toContain(
     payload?.["TelemetryDeck.Accessibility.preferredContentSizeCategory"],
   );
-});
-
-describe("SSR / React Native (no window)", () => {
-  const originalWindow = global.window;
-
-  beforeEach(() => {
-    // @ts-expect-error simulate SSR by removing window
-    delete global.window;
-  });
-
-  afterEach(() => {
-    global.window = originalWindow;
-  });
-
-  test("Accessibility plugin returns empty when window is undefined", () => {
-    const td = createTelemetryDeck({
-      appID,
-      clientUser: "anonymous",
-      namespace,
-      plugins: [accessibilityPlugin],
-    });
-
-    const payload = td.payloadEnhancer?.({}) ?? {};
-    expect(payload["TelemetryDeck.Accessibility.isReduceMotionEnabled"]).toBeUndefined();
-    expect(payload["TelemetryDeck.Accessibility.preferredContentSizeCategory"]).toBeUndefined();
-  });
 });

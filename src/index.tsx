@@ -3,11 +3,12 @@ import { TelemetryDeckProvider } from "./telemetrydeck-provider";
 import { createTelemetryDeck } from "./create-telemetrydeck";
 import { useTelemetryDeck } from "./use-telemetrydeck";
 import {
-  browserPlugin,
-  environmentPlugin,
-  accessibilityPlugin,
-  navigationPlugin,
-  pwaPlugin,
+  webBrowserPlugin,
+  webEnvironmentPlugin,
+  webAccessibilityPlugin,
+  webNavigationPlugin,
+  webPwaPlugin,
+  nativePlugin,
 } from "./plugins";
 
 export {
@@ -15,9 +16,10 @@ export {
   TelemetryDeckProvider,
   createTelemetryDeck,
   useTelemetryDeck,
-  browserPlugin,
-  environmentPlugin,
-  accessibilityPlugin,
-  navigationPlugin,
-  pwaPlugin,
+  webBrowserPlugin,
+  webEnvironmentPlugin,
+  webAccessibilityPlugin,
+  webNavigationPlugin,
+  webPwaPlugin,
+  nativePlugin,
 };

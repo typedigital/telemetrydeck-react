@@ -6,9 +6,8 @@ type BrowserDetails = {
   browserVersion: string,
 };
 
-// function extracting browser information from the User-Agent-String
 const getBrowserInfo = (): Record<string, string | null> => {
-  if (typeof window === "undefined" || !window.navigator.userAgent) {
+  if (!window.navigator.userAgent) {
     return {};
   }
   const { userAgent } = window.navigator;
@@ -118,7 +117,7 @@ const getBrowserInfo = (): Record<string, string | null> => {
   };
 };
 
-const browserPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+const webBrowserPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
   // eslint-disable-next-line callback-return
   const enhancedPayload = next(payload);
 
@@ -128,4 +127,4 @@ const browserPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (p
   };
 };
 
-export { browserPlugin };
+export { webBrowserPlugin };

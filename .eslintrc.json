@@ -4,11 +4,13 @@
       "@typedigital/eslint-config/typescript",
       "@typedigital/eslint-config/react"
   ],
+  "ignorePatterns": ["jest.config.js", "src/tests/react-native/jest-environment.js"],
   "rules": {
     "react/require-default-props": "off",
     "no-undefined": "off",
     "@typescript-eslint/quotes": ["error", "double"],
-    "max-len": ["warn", { "code": 120 }]
+    "max-len": ["warn", { "code": 120 }],
+    "quotes": "off"
   },
   "parserOptions": {
     "project": ["./tsconfig.json"]
