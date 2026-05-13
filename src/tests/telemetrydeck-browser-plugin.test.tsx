@@ -11,7 +11,7 @@ import { TelemetryDeckProvider } from "../telemetrydeck-provider";
 import { createTelemetryDeck } from "../create-telemetrydeck";
 import { browserPlugin } from "../plugins";
 import { handlers } from "./test-utils/handlers";
-import { appID } from "./test-utils/variables";
+import { appID, namespace } from "./test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -20,7 +20,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 test("Given the browser plugin is not added to TelemetryDeck context, when sending a signal, then the result contains no browser plugin payload", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
   let signalPayload = {};
   server.events.on("request:start", (request) => {
     const { body } = request;
@@ -46,7 +46,7 @@ test("Given the browser plugin is not added to TelemetryDeck context, when sendi
 });
 
 test("Given a telemetryDeck including the browserPlugin, when sending a signal, then the browserPlugin information is included in the signal payload", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [browserPlugin] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [browserPlugin] });
 
   let signalPayload = {};
   server.events.on("request:start", (request) => {
@@ -126,7 +126,7 @@ test.each(testCases)("$name", async (testCase) => {
     writable: true,
   });
 
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", plugins: [browserPlugin] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [browserPlugin] });
 
   let signalPayload: Record<string, unknown> = {};
   server.events.on("request:start", (request) => {

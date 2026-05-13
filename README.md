@@ -9,7 +9,9 @@ npm install -S @typedigital/telemetrydeck-react
 
 ## Setup
 
-To set up this library, simply create a TelemetryDeck instance with the factory `createrTelemetryDeck` and pass it to the `TelemetryDeckProvider`, which should sit relatively high up in your component tree. You'll need a TelemetryDeck account and an app to be able to use this libary.
+To set up this library, simply create a TelemetryDeck instance with the factory `createTelemetryDeck` and pass it to the `TelemetryDeckProvider`, which should sit relatively high up in your component tree. You'll need a TelemetryDeck account and an app to be able to use this library.
+
+The `namespace` parameter is required and can be found in the [TelemetryDeck Dashboard](https://dashboard.telemetrydeck.com/).
 
 ```tsx
 import * as React from 'react';
@@ -17,7 +19,11 @@ import * as ReactDOM from 'react-dom';
 import { TelemetryDeckProvider, createTelemetryDeck } from '@typedigital/telemetrydeck-react';
 import { Dashboard } from './Dashboard';
 
-const td = createTelemetryDeck({app: process.env.APP_ID, user: 'anonymous'});
+const td = createTelemetryDeck({
+  appID: process.env.APP_ID,
+  clientUser: 'anonymous',
+  namespace: 'your-namespace',
+});
 
 const App = () => {
 
@@ -75,22 +81,38 @@ export {
 }
 ```
 
-##  React Native & Expo Support
+## React Native & Expo Support
 
-`telemetrydeck-react` also supports React Native or Expo.
-If no global implementation is available because you are not on the web, TelemetryDeck needs a subtle implementation which can be either injected by extending `globalThis` or added to the TelemetryDeck instance.
+`telemetrydeck-react` also supports React Native and Expo (SDK 51+).
 
-In the React Native context, a TextEncoder is also needed for it to work properly.
+### Automatic Development Mode Detection
 
-If you are developing an Expo project, you should install the following dependencies in addition to this library.
+In React Native, `testMode` is automatically enabled when the Metro bundler's `__DEV__` flag is `true` (i.e., during development). This prevents development signals from polluting your production analytics. You can explicitly override this behavior:
 
-```shell
-npm i -S expo-crypto text-encoding
+```tsx
+const td = createTelemetryDeck({
+  appID: 'YOUR_APP_ID',
+  clientUser: 'anonymous',
+  namespace: 'your-namespace',
+  testMode: false, // Force testMode off even in development
+});
 ```
 
-### Monkey-Patching crypto and TextEncoder
+### Polyfilling crypto.subtle
 
-To patch the functionalities, a file named `globals.js` should be created first. The following code should be added to this file. This code extends the global object for the React Native Context with the TextEncoder and the `crypto.subtle.digest` function, which converts a message to a hash.
+Since React Native does not provide a global `crypto.subtle` implementation, you need to polyfill it using `expo-crypto`. Since Expo SDK 51 (React Native 0.74+), `TextEncoder` is natively available in the Hermes engine and no longer requires a separate polyfill.
+
+Install the required dependency using Expo's managed install command, which ensures version compatibility with your Expo SDK:
+
+```shell
+npx expo install expo-crypto
+```
+
+> **Expo SDK 50 and older:** If you are using Expo SDK 50 or older, `TextEncoder` is not available natively. You will need to install an additional polyfill such as `text-encoding` and assign it to `global.TextEncoder` in your `globals.js` file.
+
+### Polyfilling crypto.subtle.digest
+
+Create a file named `globals.js` with the following content. This extends the global object with the `crypto.subtle.digest` function required by TelemetryDeck for hashing.
 
 ```ts
 // globals.js
@@ -101,11 +123,10 @@ globalThis.crypto = {
     subtle: {
         digest: (algorithm, message) => Crypto.digest(algorithm, message)
     }
-}
-global.TextEncoder = require('text-encoding').TextEncoder;
+};
 ```
 
-Finally, the created file should be imported into the `index.js` or any other root file for the bundler.
+Finally, import the file in your `index.js` or any other root file for the bundler.
 
 ```js
 // index.js

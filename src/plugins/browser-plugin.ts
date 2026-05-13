@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "src/create-telemetrydeck";
+import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "../create-telemetrydeck";
 
 type BrowserDetails = {
   browserName: "Opera" | "Edge" | "Chrome" | "Safari" | "Firefox",
@@ -8,6 +8,9 @@ type BrowserDetails = {
 
 // function extracting browser information from the User-Agent-String
 const getBrowserInfo = (): Record<string, string | null> => {
+  if (typeof window === "undefined" || !window.navigator.userAgent) {
+    return {};
+  }
   const { userAgent } = window.navigator;
 
   /**

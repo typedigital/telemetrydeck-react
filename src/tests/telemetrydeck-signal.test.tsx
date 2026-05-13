@@ -10,7 +10,7 @@ import { LIB_VERSION } from "../version";
 import { createTelemetryDeck } from "../create-telemetrydeck";
 import Setup from "./test-utils/setup-td";
 import { handlers } from "./test-utils/handlers";
-import { appID } from "./test-utils/variables";
+import { appID, namespace } from "./test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -22,7 +22,7 @@ const component = "dashboard";
 const path = "/dashboard";
 
 test("given a telemetryDeck, when envoking its signal function, the respective signal is sent", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
 
   let requestCount = 0;
   server.events.on("request:start", () => {
@@ -54,7 +54,7 @@ test("given a telemetryDeck, when envoking its signal function, the respective s
 });
 
 test("Given a telemetryDeck, when adding signals to the queue, then no request should be sent", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -83,7 +83,7 @@ test("Given a telemetryDeck, when adding signals to the queue, then no request s
 });
 
 test("Given signals are queued, when flushing, respective signals are sent together", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -158,7 +158,7 @@ test("Given signals are queued, when flushing, respective signals are sent toget
 });
 
 test("Given we queue up to 100, when flushing, then the system does not break", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -211,7 +211,7 @@ test("Given we queue up to 100, when flushing, then the system does not break", 
 });
 
 test("Given no signals are queued, when flushing the Store, then the system does not break", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
 
   /**
    * This event listener is used to count the number of requests sent to the server.
@@ -245,9 +245,26 @@ test("Given no appId was provided, when envoking createTelemetryDeck, then we ex
   let error;
   try {
     // @ts-expect-error since we are testing an edge case where users using javaScript might pass undefined values
-    createTelemetryDeck({ clientUser: "anonymous" });
+    createTelemetryDeck({ clientUser: "anonymous", namespace });
   } catch (err) {
     error = err;
   }
   expect(error).toBeDefined();
+});
+
+test("Given no namespace was provided, when envoking createTelemetryDeck, then we expect our function to throw", () => {
+  let error;
+  try {
+    // @ts-expect-error since we are testing an edge case where users using javaScript might pass undefined values
+    createTelemetryDeck({ appID, clientUser: "anonymous" });
+  } catch (err) {
+    error = err;
+  }
+  expect(error).toBeDefined();
+});
+
+test("Given a blank namespace was provided, when envoking createTelemetryDeck, then we expect our function to throw", () => {
+  expect(() => {
+    createTelemetryDeck({ appID, clientUser: "anonymous", namespace: "   " });
+  }).toThrow("namespace has to be defined and cannot be blank");
 });

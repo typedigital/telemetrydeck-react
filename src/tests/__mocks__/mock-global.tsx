@@ -1,7 +1,8 @@
 import crypto from "crypto";
-import { TextEncoder } from "text-encoding";
+import { TextEncoder } from "util";
 
-global.TextEncoder = TextEncoder;
+global.TextEncoder = TextEncoder as typeof globalThis.TextEncoder;
+
 Object.defineProperty(global, "crypto", {
   value: {
     ...crypto,

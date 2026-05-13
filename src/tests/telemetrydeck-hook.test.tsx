@@ -2,18 +2,26 @@
 /* eslint-disable import/extensions */
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { setupServer } from "msw/node";
 import "cross-fetch/polyfill";
 import "./__mocks__/mock-global";
 import { createTelemetryDeck } from "../create-telemetrydeck";
 import Setup from "./test-utils/setup-td";
-import { appID } from "./test-utils/variables";
+import { handlers } from "./test-utils/handlers";
+import { appID, namespace } from "./test-utils/variables";
+
+const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 const type = "pagewiev";
 const component = "dashboard";
 const path = "/dashboard";
 
 test("signals are sent when pressing the button", () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
   const spy = jest.spyOn(td, "signal");
   render(
     <Setup td={td}>
@@ -35,7 +43,7 @@ test("signals are sent when pressing the button", () => {
 });
 
 test("signal is added to the queue when pressing the button", () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous" });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace });
   const spy = jest.spyOn(td, "queue");
   render(
     <Setup td={td}>
