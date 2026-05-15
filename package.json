@@ -1,6 +1,6 @@
 {
     "name": "@typedigital/telemetrydeck-react",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "author": "Andreas Kottre",
     "module": "dist/telemetrydeck-react.esm.js",
     "license": "MIT",
