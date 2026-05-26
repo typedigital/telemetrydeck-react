@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.5.0...v0.6.0) (2026-05-13)
+
+
+### Features
+
+* add required namespace field and modernize Expo setup ([#31](https://github.com/typedigital/telemetrydeck-react/issues/31)) ([4f19481](https://github.com/typedigital/telemetrydeck-react/commit/4f19481085a382f34750998f9273a9c5d4daa04d))
+
 ## [0.5.0](https://github.com/typedigital/telemetrydeck-react/compare/v0.4.1...v0.5.0) (2025-07-18)
 
 
