@@ -1,0 +1,104 @@
+/* eslint-disable max-len */
+/* eslint-disable import/no-unassigned-import */
+import React from "react";
+import { renderHook } from "@testing-library/react";
+import "cross-fetch/polyfill";
+import "./__mocks__/mock-global";
+import { setupServer } from "msw/node";
+import { useTelemetryDeck } from "../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../telemetrydeck-provider";
+import { createTelemetryDeck } from "../create-telemetrydeck";
+import { accessibilityPlugin } from "../plugins/accessibility-plugin";
+import { handlers } from "./test-utils/handlers";
+import { appID, namespace } from "./test-utils/variables";
+
+const server = setupServer(...handlers);
+
+const getSignalPayload = () => {
+  let signalPayload: Record<string, unknown> | undefined;
+  server.events.on("request:start", (request) => {
+    const { body } = request;
+    if (Array.isArray(body) && body.length > 0) {
+      const [{ payload }] = body;
+      signalPayload = payload;
+    } else if (body) {
+      const { payload } = body as { payload: Record<string, unknown> };
+      signalPayload = payload;
+    }
+  });
+  return () => signalPayload;
+};
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+test("Accessibility plugin adds reduce motion info", async () => {
+  const td = createTelemetryDeck({
+    appID,
+    clientUser: "anonymous",
+    namespace,
+    plugins: [accessibilityPlugin],
+  });
+  const readPayload = getSignalPayload();
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
+  );
+  const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
+  await signal("test event");
+
+  const payload = readPayload();
+  expect(payload).toBeDefined();
+  expect(payload?.["TelemetryDeck.Accessibility.isReduceMotionEnabled"]).toBeDefined();
+  expect(payload?.["TelemetryDeck.Accessibility.isReduceTransparencyEnabled"]).toBeDefined();
+  expect(payload?.["TelemetryDeck.Accessibility.shouldDifferentiateWithoutColor"]).toBeDefined();
+});
+
+test("Accessibility plugin adds preferred content size category", async () => {
+  const td = createTelemetryDeck({
+    appID,
+    clientUser: "anonymous",
+    namespace,
+    plugins: [accessibilityPlugin],
+  });
+  const readPayload = getSignalPayload();
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <TelemetryDeckProvider telemetryDeck={td}>{children}</TelemetryDeckProvider>
+  );
+  const { result: { current: { signal } } } = renderHook(() => useTelemetryDeck(), { wrapper: Wrapper });
+  await signal("test event");
+
+  const payload = readPayload();
+  expect(payload?.["TelemetryDeck.Accessibility.preferredContentSizeCategory"]).toBeDefined();
+  expect(["small", "medium", "large", "extraLarge"]).toContain(
+    payload?.["TelemetryDeck.Accessibility.preferredContentSizeCategory"],
+  );
+});
+
+describe("SSR / React Native (no window)", () => {
+  const originalWindow = global.window;
+
+  beforeEach(() => {
+    // @ts-expect-error simulate SSR by removing window
+    delete global.window;
+  });
+
+  afterEach(() => {
+    global.window = originalWindow;
+  });
+
+  test("Accessibility plugin returns empty when window is undefined", () => {
+    const td = createTelemetryDeck({
+      appID,
+      clientUser: "anonymous",
+      namespace,
+      plugins: [accessibilityPlugin],
+    });
+
+    const payload = td.payloadEnhancer?.({}) ?? {};
+    expect(payload["TelemetryDeck.Accessibility.isReduceMotionEnabled"]).toBeUndefined();
+    expect(payload["TelemetryDeck.Accessibility.preferredContentSizeCategory"]).toBeUndefined();
+  });
+});

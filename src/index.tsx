@@ -2,7 +2,13 @@ import { TelemetryDeckContext } from "./telemetrydeck-context";
 import { TelemetryDeckProvider } from "./telemetrydeck-provider";
 import { createTelemetryDeck } from "./create-telemetrydeck";
 import { useTelemetryDeck } from "./use-telemetrydeck";
-import { browserPlugin } from "./plugins";
+import {
+  browserPlugin,
+  environmentPlugin,
+  accessibilityPlugin,
+  navigationPlugin,
+  pwaPlugin,
+} from "./plugins";
 
 export {
   TelemetryDeckContext,
@@ -10,4 +16,8 @@ export {
   createTelemetryDeck,
   useTelemetryDeck,
   browserPlugin,
+  environmentPlugin,
+  accessibilityPlugin,
+  navigationPlugin,
+  pwaPlugin,
 };
