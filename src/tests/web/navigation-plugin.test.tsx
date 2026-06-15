@@ -3,14 +3,14 @@
 import React from "react";
 import { renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
-import "./__mocks__/mock-global";
+import "../__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { useTelemetryDeck } from "../use-telemetrydeck";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
-import { navigationPlugin } from "../plugins/navigation-plugin";
-import { handlers } from "./test-utils/handlers";
-import { appID, namespace } from "./test-utils/variables";
+import { useTelemetryDeck } from "../../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
+import { createTelemetryDeck } from "../../create-telemetrydeck";
+import { webNavigationPlugin } from "../../plugins/web-navigation-plugin";
+import { handlers } from "../test-utils/handlers";
+import { appID, namespace } from "../test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -38,7 +38,7 @@ test("Navigation plugin adds destinationPath to payload", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [navigationPlugin],
+    plugins: [webNavigationPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -58,7 +58,7 @@ test("Navigation plugin adds referrer to payload", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [navigationPlugin],
+    plugins: [webNavigationPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -71,30 +71,4 @@ test("Navigation plugin adds referrer to payload", async () => {
   const payload = readPayload();
   expect(payload).toBeDefined();
   expect(typeof payload?.["TelemetryDeck.Navigation.referrer"]).toBe("string");
-});
-
-describe("SSR / React Native (no window)", () => {
-  const originalWindow = global.window;
-
-  beforeEach(() => {
-    // @ts-expect-error simulate SSR by removing window
-    delete global.window;
-  });
-
-  afterEach(() => {
-    global.window = originalWindow;
-  });
-
-  test("Navigation plugin does not crash when window is undefined", () => {
-    const td = createTelemetryDeck({
-      appID,
-      clientUser: "anonymous",
-      namespace,
-      plugins: [navigationPlugin],
-    });
-
-    const payload = td.payloadEnhancer?.({}) ?? {};
-    expect(payload["TelemetryDeck.Navigation.destinationPath"]).toBeUndefined();
-    expect(payload["TelemetryDeck.Navigation.referrer"]).toBeUndefined();
-  });
 });

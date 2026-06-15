@@ -3,15 +3,15 @@
 import React from "react";
 import { renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
-import "./__mocks__/mock-global";
+import "../__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { useTelemetryDeck } from "../use-telemetrydeck";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
-import { LIB_VERSION } from "../version";
-import { environmentPlugin } from "../plugins/environment-plugin";
-import { handlers } from "./test-utils/handlers";
-import { appID, namespace } from "./test-utils/variables";
+import { useTelemetryDeck } from "../../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
+import { createTelemetryDeck } from "../../create-telemetrydeck";
+import { LIB_VERSION } from "../../version";
+import { webEnvironmentPlugin } from "../../plugins/web-environment-plugin";
+import { handlers } from "../test-utils/handlers";
+import { appID, namespace } from "../test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -39,7 +39,7 @@ test("Environment plugin adds SDK info to payload", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [environmentPlugin],
+    plugins: [webEnvironmentPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -61,7 +61,7 @@ test("Environment plugin adds screen resolution", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [environmentPlugin],
+    plugins: [webEnvironmentPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -82,7 +82,7 @@ test("Environment plugin adds language info", async () => {
     appID,
     clientUser: "anonymous",
     namespace,
-    plugins: [environmentPlugin],
+    plugins: [webEnvironmentPlugin],
   });
   const readPayload = getSignalPayload();
 
@@ -95,32 +95,4 @@ test("Environment plugin adds language info", async () => {
   const payload = readPayload();
   expect(payload?.["TelemetryDeck.RunContext.language"]).toBeDefined();
   expect(payload?.["TelemetryDeck.RunContext.locale"]).toBeDefined();
-});
-
-describe("SSR / React Native (no window)", () => {
-  const originalWindow = global.window;
-
-  beforeEach(() => {
-    // @ts-expect-error simulate SSR by removing window
-    delete global.window;
-  });
-
-  afterEach(() => {
-    global.window = originalWindow;
-  });
-
-  test("Environment plugin returns only SDK info when window is undefined", () => {
-    const td = createTelemetryDeck({
-      appID,
-      clientUser: "anonymous",
-      namespace,
-      plugins: [environmentPlugin],
-    });
-
-    const payload = td.payloadEnhancer?.({}) ?? {};
-    expect(payload["TelemetryDeck.SDK.name"]).toBe("TelemetryDeck React SDK");
-    expect(payload["TelemetryDeck.SDK.version"]).toBe(LIB_VERSION);
-    expect(payload["TelemetryDeck.Device.screenResolutionWidth"]).toBeUndefined();
-    expect(payload["TelemetryDeck.UserPreference.colorScheme"]).toBeUndefined();
-  });
 });

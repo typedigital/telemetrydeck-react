@@ -4,14 +4,14 @@
 import React from "react";
 import { renderHook } from "@testing-library/react";
 import "cross-fetch/polyfill";
-import "./__mocks__/mock-global";
+import "../__mocks__/mock-global";
 import { setupServer } from "msw/node";
-import { useTelemetryDeck } from "../use-telemetrydeck";
-import { TelemetryDeckProvider } from "../telemetrydeck-provider";
-import { createTelemetryDeck } from "../create-telemetrydeck";
-import { browserPlugin } from "../plugins";
-import { handlers } from "./test-utils/handlers";
-import { appID, namespace } from "./test-utils/variables";
+import { useTelemetryDeck } from "../../use-telemetrydeck";
+import { TelemetryDeckProvider } from "../../telemetrydeck-provider";
+import { createTelemetryDeck } from "../../create-telemetrydeck";
+import { webBrowserPlugin } from "../../plugins";
+import { handlers } from "../test-utils/handlers";
+import { appID, namespace } from "../test-utils/variables";
 
 const server = setupServer(...handlers);
 
@@ -46,7 +46,7 @@ test("Given the browser plugin is not added to TelemetryDeck context, when sendi
 });
 
 test("Given a telemetryDeck including the browserPlugin, when sending a signal, then the browserPlugin information is included in the signal payload", async () => {
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [browserPlugin] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [webBrowserPlugin] });
 
   let signalPayload = {};
   server.events.on("request:start", (request) => {
@@ -126,7 +126,7 @@ test.each(testCases)("$name", async (testCase) => {
     writable: true,
   });
 
-  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [browserPlugin] });
+  const td = createTelemetryDeck({ appID, clientUser: "anonymous", namespace, plugins: [webBrowserPlugin] });
 
   let signalPayload: Record<string, unknown> = {};
   server.events.on("request:start", (request) => {

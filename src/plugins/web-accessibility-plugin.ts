@@ -2,9 +2,6 @@
 import { PayloadEnhancer, TelemetryDeckReactSDKPlugin } from "../create-telemetrydeck";
 
 function getPreferredContentSizeCategory(): string | undefined {
-  if (typeof document === "undefined") {
-    return undefined;
-  }
   const rootFontSize = parseFloat(
     window.getComputedStyle(document.documentElement).fontSize,
   );
@@ -21,20 +18,17 @@ function getPreferredContentSizeCategory(): string | undefined {
 }
 
 function getAccessibilityInfo(): Record<string, string> {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
   const result: Record<string, string> = {};
 
-  const isReduceMotionEnabled = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  result["TelemetryDeck.Accessibility.isReduceMotionEnabled"] = String(isReduceMotionEnabled);
-
-  const isReduceTransparencyEnabled = window.matchMedia("(prefers-reduced-transparency: reduce)").matches;
-  result["TelemetryDeck.Accessibility.isReduceTransparencyEnabled"] = String(isReduceTransparencyEnabled);
-
-  const shouldDifferentiateWithoutColor = window.matchMedia("(forced-colors: active)").matches;
-  result["TelemetryDeck.Accessibility.shouldDifferentiateWithoutColor"] = String(shouldDifferentiateWithoutColor);
+  result["TelemetryDeck.Accessibility.isReduceMotionEnabled"] = String(
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  result["TelemetryDeck.Accessibility.isReduceTransparencyEnabled"] = String(
+    window.matchMedia("(prefers-reduced-transparency: reduce)").matches,
+  );
+  result["TelemetryDeck.Accessibility.shouldDifferentiateWithoutColor"] = String(
+    window.matchMedia("(forced-colors: active)").matches,
+  );
 
   const preferredContentSizeCategory = getPreferredContentSizeCategory();
   if (preferredContentSizeCategory) {
@@ -44,7 +38,7 @@ function getAccessibilityInfo(): Record<string, string> {
   return result;
 }
 
-const accessibilityPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
+const webAccessibilityPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer) => (payload: Record<string, unknown>) => {
   // eslint-disable-next-line callback-return
   const enhancedPayload = next(payload);
 
@@ -54,4 +48,4 @@ const accessibilityPlugin: TelemetryDeckReactSDKPlugin = (next: PayloadEnhancer)
   };
 };
 
-export { accessibilityPlugin };
+export { webAccessibilityPlugin };

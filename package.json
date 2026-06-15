@@ -17,7 +17,7 @@
         "prepublish": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
         "start": "tsdx watch",
         "build": "tsdx build",
-        "test": "tsdx test --passWithNoTests",
+        "test": "node node_modules/tsdx/node_modules/jest-cli/bin/jest.js --config jest.config.js --passWithNoTests",
         "lint": "eslint ./src",
         "lint-fix": "eslint ./src --fix",
         "prepare": "npm run build",
@@ -26,10 +26,14 @@
     },
     "peerDependencies": {
         "react": ">= 16.8.0",
-        "expo-crypto": ">= 13.0.0"
+        "expo-crypto": ">= 13.0.0",
+        "react-native": ">= 0.70.0"
     },
     "peerDependenciesMeta": {
         "expo-crypto": {
+            "optional": true
+        },
+        "react-native": {
             "optional": true
         }
     },
